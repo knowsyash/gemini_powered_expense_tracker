@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- For large screens (tablets, landscape phones) -->
+    <dimen name="spacing_xs">6dp</dimen>
+    <dimen name="spacing_small">12dp</dimen>
+    <dimen name="spacing_medium">20dp</dimen>
+    <dimen name="spacing_large">32dp</dimen>
+    <dimen name="spacing_xl">40dp</dimen>
+    <dimen name="spacing_xxl">56dp</dimen>
+
+    <!-- Larger text for better readability on big screens -->
+    <dimen name="text_size_body">16sp</dimen>
+    <dimen name="text_size_body_large">18sp</dimen>
+    <dimen name="text_size_subtitle">20sp</dimen>
+    <dimen name="text_size_title">22sp</dimen>
+    <dimen name="text_size_headline">28sp</dimen>
+    <dimen name="text_size_display">36sp</dimen>
+
+    <!-- Larger cards for tablets -->
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="card_corner_radius_large">20dp</dimen>
+    <dimen name="card_elevation">6dp</dimen>
+    <dimen name="card_elevation_high">12dp</dimen>
+
+    <!-- Larger buttons for tablets -->
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="button_height_large">64dp</dimen>
+
+    <!-- Larger layout margins for tablets -->
+    <dimen name="layout_margin">24dp</dimen>
+    <dimen name="content_padding">24dp</dimen>
+    <dimen name="card_padding">20dp</dimen>
+    <dimen name="card_padding_large">32dp</dimen>
+</resources>

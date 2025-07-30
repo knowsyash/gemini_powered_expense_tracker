@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Icon Styles for easy use throughout the app -->
+    
+    <!-- Icon Size Definitions -->
+    <dimen name="icon_small">16dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_large">32dp</dimen>
+    <dimen name="icon_extra_large">48dp</dimen>
+    
+    <!-- Icon Styles -->
+    <style name="IconSmall">
+        <item name="android:layout_width">@dimen/icon_small</item>
+        <item name="android:layout_height">@dimen/icon_small</item>
+        <item name="android:tint">@color/silver</item>
+    </style>
+    
+    <style name="IconMedium">
+        <item name="android:layout_width">@dimen/icon_medium</item>
+        <item name="android:layout_height">@dimen/icon_medium</item>
+        <item name="android:tint">@color/silver</item>
+    </style>
+    
+    <style name="IconLarge">
+        <item name="android:layout_width">@dimen/icon_large</item>
+        <item name="android:layout_height">@dimen/icon_large</item>
+        <item name="android:tint">@color/silver</item>
+    </style>
+    
+    <style name="IconExtraLarge">
+        <item name="android:layout_width">@dimen/icon_extra_large</item>
+        <item name="android:layout_height">@dimen/icon_extra_large</item>
+        <item name="android:tint">@color/silver</item>
+    </style>
+    
+    <!-- Navigation Icon Styles -->
+    <style name="NavigationIcon" parent="IconMedium">
+        <item name="android:tint">@color/silver</item>
+        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
+        <item name="android:padding">8dp</item>
+    </style>
+    
+    <!-- Action Icon Styles -->
+    <style name="ActionIcon" parent="IconMedium">
+        <item name="android:tint">@color/neon_cyan</item>
+        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
+        <item name="android:padding">8dp</item>
+    </style>
+    
+    <!-- Floating Action Button Icon -->
+    <style name="FabIcon" parent="IconMedium">
+        <item name="android:tint">@color/dark_gray</item>
+    </style>
+    
+</resources>

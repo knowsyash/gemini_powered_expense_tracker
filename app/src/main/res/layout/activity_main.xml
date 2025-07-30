@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_color"
+    tools:context=".ui.MainActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/content_padding">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Header Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_large"
+                android:minHeight="@dimen/min_touch_target">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Yash Singhal"
+                    style="@style/PoppinsHeadline"
+                    android:textColor="@color/text_primary" />
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_xl"
+                    android:layout_height="@dimen/icon_size_xl"
+                    android:src="@drawable/ic_person"
+                    android:background="@drawable/circle_background"
+                    android:padding="@dimen/spacing_small"
+                    android:contentDescription="Profile"
+                    android:layout_marginStart="@dimen/spacing_medium" />
+
+            </LinearLayout>
+
+            <!-- Balance Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="@dimen/card_corner_radius_large"
+                app:cardElevation="@dimen/card_elevation_high"
+                android:layout_marginBottom="@dimen/spacing_medium">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_large"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Balance"
+                        style="@style/RobotoSubtitle"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginBottom="@dimen/spacing_small" />
+
+                    <TextView
+                        android:id="@+id/tvBalance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹25,000.00"
+                        android:textSize="@dimen/text_size_display"
+                        android:textColor="@color/primary_color"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-condensed" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Overview Cards -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="@dimen/card_corner_radius_large"
+                app:cardElevation="@dimen/card_elevation_high"
+                android:layout_marginBottom="@dimen/spacing_medium">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_large">
+
+                    <!-- Income/Expense Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:baselineAligned="false">
+
+                        <!-- Income Card -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:background="@drawable/modern_card_background"
+                            android:padding="@dimen/card_padding"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Income"
+                                style="@style/RobotoBody"
+                                android:textColor="@color/text_secondary"
+                                android:layout_marginBottom="@dimen/spacing_xs" />
+
+                            <TextView
+                                android:id="@+id/tvIncome"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹15,000.00"
+                                style="@style/RobotoTitle"
+                                android:textColor="@color/primary_color" />
+
+                        </LinearLayout>
+
+                        <!-- Expense Card -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:background="@drawable/modern_card_background"
+                            android:padding="@dimen/card_padding"
+                            android:layout_marginStart="@dimen/spacing_small"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Expenses"
+                                style="@style/RobotoBody"
+                                android:textColor="@color/text_secondary"
+                                android:layout_marginBottom="@dimen/spacing_xs" />
+
+                            <TextView
+                                android:id="@+id/tvExpenses"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹8,500.00"
+                                style="@style/RobotoTitle"
+                                android:textColor="@color/primary_color" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Actions -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="@dimen/card_corner_radius_large"
+                app:cardElevation="@dimen/card_elevation_high"
+                android:layout_marginBottom="@dimen/spacing_medium">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_large">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Quick Actions"
+                        style="@style/RobotoTitle"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="@dimen/spacing_medium" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:baselineAligned="false">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/fabAddExpense"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/button_height_large"
+                            android:layout_weight="1"
+                            android:text="Add Expense"
+                            android:textColor="@color/text_primary"
+                            android:background="@drawable/gradient_button"
+                            android:layout_marginEnd="@dimen/spacing_medium"
+                            app:cornerRadius="@dimen/button_corner_radius_large"
+                            app:elevation="0dp"
+                            app:icon="@drawable/ic_add"
+                            app:iconTint="@color/text_primary"
+                            app:iconGravity="top"
+                            app:iconSize="@dimen/icon_size_medium" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/fabChat"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/button_height_large"
+                            android:layout_weight="1"
+                            android:text="AI Chat"
+                            android:textColor="@color/primary_color"
+                            android:background="@drawable/modern_card_background"
+                            app:cornerRadius="@dimen/button_corner_radius_large"
+                            app:strokeColor="@color/primary_color"
+                            app:strokeWidth="1dp"
+                            app:elevation="0dp"
+                            app:icon="@drawable/chat"
+                            app:iconTint="@color/primary_color"
+                            app:iconGravity="top"
+                            app:iconSize="@dimen/icon_size_medium" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Recent Transactions -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="@dimen/card_corner_radius_large"
+                app:cardElevation="@dimen/card_elevation_high">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_large">
+
+                    <!-- Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="@dimen/spacing_medium">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Recent Transactions"
+                            style="@style/RobotoTitle"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:id="@+id/tvViewAll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="View All"
+                            style="@style/RobotoBody"
+                            android:textColor="@color/primary_color"
+                            android:padding="@dimen/spacing_small"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:minHeight="@dimen/min_touch_target" />
+
+                    </LinearLayout>
+
+                    <!-- Transaction List -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewExpenses"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:clipToPadding="false" />
+
+                    <!-- Empty State -->
+                    <LinearLayout
+                        android:id="@+id/tvNoExpenses"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_xxl"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No transactions yet"
+                            style="@style/RobotoSubtitle"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="@dimen/spacing_small" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Start by adding your first expense or income"
+                            style="@style/RobotoBody"
+                            android:textColor="@color/text_tertiary"
+                            android:gravity="center" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

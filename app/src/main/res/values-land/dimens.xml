@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- For landscape orientation -->
+    <dimen name="spacing_medium">12dp</dimen>
+    <dimen name="spacing_large">20dp</dimen>
+    <dimen name="spacing_xl">28dp</dimen>
+    
+    <!-- Compact spacing for landscape -->
+    <dimen name="card_padding">12dp</dimen>
+    <dimen name="card_padding_large">16dp</dimen>
+    <dimen name="layout_margin">12dp</dimen>
+    <dimen name="content_padding">12dp</dimen>
+</resources>

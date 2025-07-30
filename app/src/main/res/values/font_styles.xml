@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Professional Font Styles using system fonts only -->
+    
+    <!-- Roboto-like Font Styles (using sans-serif) -->
+    <style name="RobotoHeadline" parent="TextAppearance.AppCompat.Headline">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="RobotoTitle" parent="TextAppearance.AppCompat.Title">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="RobotoSubtitle" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <style name="RobotoBody" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <style name="RobotoCaption" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <!-- Poppins-like Font Styles (using sans-serif-condensed) -->
+    <style name="PoppinsHeadline" parent="TextAppearance.AppCompat.Headline">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="PoppinsTitle" parent="TextAppearance.AppCompat.Title">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="PoppinsSubtitle" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <style name="PoppinsBody" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <!-- Inter-like Font Styles (using sans-serif-medium) -->
+    <style name="InterHeadline" parent="TextAppearance.AppCompat.Headline">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="InterTitle" parent="TextAppearance.AppCompat.Title">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="InterBody" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <!-- Button Styles with System Fonts -->
+    <style name="RobotoButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+    
+    <style name="PoppinsButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+    
+</resources>

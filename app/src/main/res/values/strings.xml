@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AI Expense Tracker</string>
+    <string name="add_expense">Add Expense</string>
+    <string name="ai_chat">AI Chat</string>
+    <string name="amount">Amount</string>
+    <string name="category">Category</string>
+    <string name="description">Description</string>
+    <string name="date">Date</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="income">Income</string>
+    <string name="expense">Expense</string>
+    <string name="total_income">Total Income</string>
+    <string name="total_expenses">Total Expenses</string>
+    <string name="balance">Balance</string>
+    <string name="recent_transactions">Recent Transactions</string>
+    <string name="no_expenses">No transactions yet.\nTap + to add your first expense!</string>
+    <string name="ai_assistant">AI Assistant</string>
+    <string name="type_message">Ask me about your expenses...</string>
+    <string name="send">Send</string>
+    <string name="financial_summary">Financial Summary</string>
+</resources>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Professional CRED-like Theme Colors -->
+    <color name="primary_color">#C6C6C6</color>
+    <color name="primary_light">#E0E0E0</color>
+    <color name="primary_dark">#A0A0A0</color>
+    <color name="secondary_color">#808080</color>
+    <color name="secondary_light">#B0B0B0</color>
+    <color name="secondary_dark">#606060</color>
+    
+    <!-- Background Colors -->
+    <color name="background_color">#0A0A0A</color>
+    <color name="background_primary">#0A0A0A</color>
+    <color name="background_secondary">#121212</color>
+    <color name="background_tertiary">#1A1A1A</color>
+    <color name="surface_color">#1E1E1E</color>
+    <color name="surface_variant">#2A2A2A</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#C6C6C6</color>
+    <color name="text_tertiary">#808080</color>
+    <color name="text_hint">#606060</color>
+    
+    <!-- Accent Colors -->
+    <color name="accent_blue">#4A90E2</color>
+    <color name="accent_green">#50C878</color>
+    <color name="accent_orange">#FF8C42</color>
+    <color name="accent_red">#FF6B6B</color>
+    <color name="accent_purple">#8E7CC3</color>
+    
+    <!-- Financial Colors -->
+    <color name="income_green">#C6C6C6</color>
+    <color name="expense_red">#C6C6C6</color>
+    <color name="balance_blue">#C6C6C6</color>
+    
+    <!-- Chat Colors -->
+    <color name="user_message_background">#2A2A2A</color>
+    <color name="ai_message_background">#1E1E1E</color>
+    <color name="input_background">#1E1E1E</color>
+    <color name="message_time_color">#808080</color>
+    
+    <!-- Card and Component Colors -->
+    <color name="card_background">#1E1E1E</color>
+    <color name="card_stroke">#2A2A2A</color>
+    <color name="divider_color">#2A2A2A</color>
+    
+    <!-- Button Colors -->
+    <color name="button_background">#2A2A2A</color>
+    <color name="button_background_secondary">#1E1E1E</color>
+    <color name="button_stroke">#404040</color>
+    
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#0A0A0A</color>
+    <color name="gradient_end">#121212</color>
+    <color name="gradient_background_start">#0A0A0A</color>
+    <color name="gradient_background_end">#121212</color>
+    
+    <!-- Legacy Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Additional Google Fonts Style Colors -->
+    <color name="silver">#C6C6C6</color>
+    <color name="dark_gray">#2A2A2A</color>
+    <color name="neon_cyan">#00FFFF</color>
+</resources>
