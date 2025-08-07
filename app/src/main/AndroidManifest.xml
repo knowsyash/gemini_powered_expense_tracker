@@ -38,6 +38,16 @@
             android:windowSoftInputMode="adjustPan"
             android:parentActivityName=".ui.MainActivity" />
             
+        <activity
+            android:name=".ui.activity.AnalyticsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
+            
+        <activity
+            android:name=".ui.activity.AllTransactionsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
+            
     </application>
 
 </manifest>
