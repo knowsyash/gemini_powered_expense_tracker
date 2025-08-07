@@ -14,6 +14,7 @@ import com.expensetracker.ai.ExpenseTrackerApplication
 import com.expensetracker.ai.R
 import com.expensetracker.ai.data.repository.ExpenseRepository
 import com.expensetracker.ai.ui.adapter.ExpenseAdapter
+import com.expensetracker.ai.ui.activity.AllTransactionsActivity
 import com.expensetracker.ai.ui.activity.AnalyticsActivity
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModel
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModelFactory
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fabAddExpense: MaterialButton
     private lateinit var analyticsButton: MaterialButton
     private lateinit var fabChat: MaterialButton
+    private lateinit var tvViewAll: TextView
 
     private val expenseViewModel: ExpenseViewModel by viewModels {
         ExpenseViewModelFactory(
@@ -60,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         fabAddExpense = findViewById(R.id.fabAddExpense)
          analyticsButton = findViewById(R.id.btnAnalytics)
         fabChat = findViewById(R.id.fabChat)
+        tvViewAll = findViewById(R.id.tvViewAll)
     }
 
     private fun setupRecyclerView() {
@@ -83,7 +86,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupObservers() {
         lifecycleScope.launch {
             expenseViewModel.allExpenses.collect { expenses ->
-                expenseAdapter.submitList(expenses)
+                // Show only the 5 most recent transactions on main screen
+                val recentExpenses = expenses.take(5)
+                expenseAdapter.submitList(recentExpenses)
                 tvNoExpenses.visibility =
                         if (expenses.isEmpty()) {
                             View.VISIBLE
@@ -116,6 +121,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         fabChat.setOnClickListener { startActivity(Intent(this, ChatActivity::class.java)) }
+
+        tvViewAll.setOnClickListener {
+            startActivity(Intent(this, AllTransactionsActivity::class.java))
+        }
     }
 
     override fun onResume() {

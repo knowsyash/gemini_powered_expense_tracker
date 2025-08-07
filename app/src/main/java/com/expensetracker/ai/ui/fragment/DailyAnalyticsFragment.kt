@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -86,7 +87,10 @@ class DailyAnalyticsFragment : Fragment() {
     private lateinit var tvSelectedDate: TextView
     private lateinit var tvNetBalance: TextView
     private lateinit var recyclerViewDailyChart: RecyclerView
+    private lateinit var btnPreviousDay: ImageButton
+    private lateinit var btnNextDay: ImageButton
     private val dailyChartAdapter by lazy { DailyChartAdapter() }
+    private var selectedDate = Date() // Track the currently selected date
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -119,7 +123,7 @@ class DailyAnalyticsFragment : Fragment() {
 
     fun refreshData() {
         if (::repository.isInitialized) {
-            loadDailyData()
+            loadDailyDataForDate(selectedDate)
         }
     }
 
@@ -129,39 +133,78 @@ class DailyAnalyticsFragment : Fragment() {
         tvSelectedDate = view.findViewById(R.id.tvSelectedDate)
         tvNetBalance = view.findViewById(R.id.tvNetBalance)
         recyclerViewDailyChart = view.findViewById(R.id.recyclerViewDailyChart)
+        btnPreviousDay = view.findViewById(R.id.btnPreviousDay)
+        btnNextDay = view.findViewById(R.id.btnNextDay)
 
         // Setup RecyclerView
         recyclerViewDailyChart.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = dailyChartAdapter
         }
+
+        // Setup navigation buttons
+        btnPreviousDay.setOnClickListener {
+            navigateToDate(-1)
+        }
+
+        btnNextDay.setOnClickListener {
+            navigateToDate(1)
+        }
+    }
+
+    private fun navigateToDate(dayOffset: Int) {
+        val calendar = Calendar.getInstance()
+        calendar.time = selectedDate
+        calendar.add(Calendar.DAY_OF_YEAR, dayOffset)
+        selectedDate = calendar.time
+        loadDailyDataForDate(selectedDate)
+        updateNavigationButtons()
+    }
+
+    private fun updateNavigationButtons() {
+        val today = Date()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val selectedDateString = dateFormat.format(selectedDate)
+        val todayString = dateFormat.format(today)
+        
+        // Hide/disable next button if selected date is today or later
+        if (selectedDateString >= todayString) {
+            btnNextDay.visibility = View.INVISIBLE
+        } else {
+            btnNextDay.visibility = View.VISIBLE
+        }
     }
 
     private fun loadDailyData() {
+        selectedDate = Date() // Reset to today when first loading
+        loadDailyDataForDate(selectedDate)
+        updateNavigationButtons()
+    }
+
+    private fun loadDailyDataForDate(targetDate: Date) {
         lifecycleScope.launch {
             try {
                 val allExpenses = repository.getAllExpenses().first()
-                val today = Date()
                 val calendar = Calendar.getInstance()
 
                 // Debug logging
                 println("Daily Analytics - Total expenses in DB: ${allExpenses.size}")
-                allExpenses.forEach { expense ->
-                    println(
-                            "Expense: ${expense.amount}, Date: ${expense.date}, IsIncome: ${expense.isIncome}"
-                    )
-                }
 
-                // Get last 7 days data
+                // Get last 7 days data centered around the selected date
                 val last7DaysData = mutableListOf<DayData>()
                 for (i in 6 downTo 0) {
-                    calendar.time = today
+                    calendar.time = targetDate
                     calendar.add(Calendar.DAY_OF_YEAR, -i)
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
                     val dayStart = calendar.time
 
                     calendar.set(Calendar.HOUR_OF_DAY, 23)
                     calendar.set(Calendar.MINUTE, 59)
                     calendar.set(Calendar.SECOND, 59)
+                    calendar.set(Calendar.MILLISECOND, 999)
                     val dayEnd = calendar.time
 
                     val dayExpenses =
@@ -189,38 +232,37 @@ class DailyAnalyticsFragment : Fragment() {
                 // Update RecyclerView
                 dailyChartAdapter.updateData(last7DaysData)
 
-                // Calculate today's totals
+                // Calculate selected date totals
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val displayFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-                val todayString = dateFormat.format(today)
+                val targetDateString = dateFormat.format(targetDate)
 
-                val todayExpenses =
+                val selectedDateExpenses =
                         allExpenses.filter { expense ->
-                            dateFormat.format(expense.date) == todayString
+                            dateFormat.format(expense.date) == targetDateString
                         }
 
-                println("Today's expenses count: ${todayExpenses.size}")
+                println("Selected date expenses count: ${selectedDateExpenses.size}")
 
-                val totalExpense = todayExpenses.filter { !it.isIncome }.sumOf { it.amount }
-                val totalIncome = todayExpenses.filter { it.isIncome }.sumOf { it.amount }
+                val totalExpense = selectedDateExpenses.filter { !it.isIncome }.sumOf { it.amount }
+                val totalIncome = selectedDateExpenses.filter { it.isIncome }.sumOf { it.amount }
                 val netBalance = totalIncome - totalExpense
 
-                // Show today's data or last 7 days total if no today's data
-                if (todayExpenses.isEmpty()) {
-                    val last7DaysExpense = last7DaysData.sumOf { it.expense }
-                    val last7DaysIncome = last7DaysData.sumOf { it.income }
-                    val last7DaysNet = last7DaysIncome - last7DaysExpense
-
-                    tvTotalExpenses.text = "₹${String.format("%.2f", last7DaysExpense)}"
-                    tvTotalIncome.text = "₹${String.format("%.2f", last7DaysIncome)}"
-                    tvNetBalance.text = "₹${String.format("%.2f", last7DaysNet)}"
-                    tvSelectedDate.text = "Last 7 Days Total"
+                // Update UI with selected date data
+                tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
+                tvTotalIncome.text = "₹${String.format("%.2f", totalIncome)}"
+                tvNetBalance.text = "₹${String.format("%.2f", netBalance)}"
+                
+                val today = Date()
+                if (dateFormat.format(targetDate) == dateFormat.format(today)) {
+                    tvSelectedDate.text = "Today: ${displayFormat.format(targetDate)}"
                 } else {
-                    tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
-                    tvTotalIncome.text = "₹${String.format("%.2f", totalIncome)}"
-                    tvNetBalance.text = "₹${String.format("%.2f", netBalance)}"
-                    tvSelectedDate.text = "Today: ${displayFormat.format(today)}"
+                    tvSelectedDate.text = displayFormat.format(targetDate)
                 }
+
+                // Update navigation buttons after loading data
+                updateNavigationButtons()
+
             } catch (e: Exception) {
                 println("Error loading daily data: ${e.message}")
                 e.printStackTrace()

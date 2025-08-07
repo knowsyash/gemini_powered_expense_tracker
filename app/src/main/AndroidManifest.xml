@@ -43,6 +43,11 @@
             android:exported="false"
             android:parentActivityName=".ui.MainActivity" />
             
+        <activity
+            android:name=".ui.activity.AllTransactionsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
+            
     </application>
 
 </manifest>

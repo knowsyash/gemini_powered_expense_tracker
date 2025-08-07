@@ -36,7 +36,7 @@ class AnalyticsActivity : AppCompatActivity() {
         try {
             val currentItem = viewPager.currentItem
             val fragment = supportFragmentManager.findFragmentByTag("f$currentItem")
-            
+
             when (fragment) {
                 is DailyAnalyticsFragment -> {
                     fragment.refreshData()
