@@ -11,8 +11,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.expensetracker.ai.ExpenseTrackerApplication
+import com.expensetracker.ai.R
 import com.expensetracker.ai.data.repository.ExpenseRepository
 import com.expensetracker.ai.ui.adapter.ExpenseAdapter
+import com.expensetracker.ai.ui.activity.AnalyticsActivity
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModel
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModelFactory
 import com.google.android.material.button.MaterialButton
@@ -30,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerViewExpenses: RecyclerView
     private lateinit var tvNoExpenses: View
     private lateinit var fabAddExpense: MaterialButton
+    private lateinit var analyticsButton: MaterialButton
     private lateinit var fabChat: MaterialButton
 
     private val expenseViewModel: ExpenseViewModel by viewModels {
@@ -40,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.expensetracker.ai.R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
         initViews()
         setupRecyclerView()
@@ -49,13 +52,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        tvBalance = findViewById(com.expensetracker.ai.R.id.tvBalance)
-        tvIncome = findViewById(com.expensetracker.ai.R.id.tvIncome)
-        tvExpenses = findViewById(com.expensetracker.ai.R.id.tvExpenses)
-        recyclerViewExpenses = findViewById(com.expensetracker.ai.R.id.recyclerViewExpenses)
-        tvNoExpenses = findViewById(com.expensetracker.ai.R.id.tvNoExpenses)
-        fabAddExpense = findViewById(com.expensetracker.ai.R.id.fabAddExpense)
-        fabChat = findViewById(com.expensetracker.ai.R.id.fabChat)
+        tvBalance = findViewById(R.id.tvBalance)
+        tvIncome = findViewById(R.id.tvIncome)
+        tvExpenses = findViewById(R.id.tvExpenses)
+        recyclerViewExpenses = findViewById(R.id.recyclerViewExpenses)
+        tvNoExpenses = findViewById(R.id.tvNoExpenses)
+        fabAddExpense = findViewById(R.id.fabAddExpense)
+         analyticsButton = findViewById(R.id.btnAnalytics)
+        fabChat = findViewById(R.id.fabChat)
     }
 
     private fun setupRecyclerView() {
@@ -105,6 +109,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         fabAddExpense.setOnClickListener {
             startActivity(Intent(this, AddExpenseActivity::class.java))
+        }
+
+        analyticsButton.setOnClickListener {
+            startActivity(Intent(this, AnalyticsActivity::class.java))
         }
 
         fabChat.setOnClickListener { startActivity(Intent(this, ChatActivity::class.java)) }

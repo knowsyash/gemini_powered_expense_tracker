@@ -2,6 +2,7 @@
 <resources>
     <!-- Professional CRED-like Theme Colors -->
     <color name="primary_color">#C6C6C6</color>
+    <color name="primary_color_light">#E0E0E0</color>
     <color name="primary_light">#E0E0E0</color>
     <color name="primary_dark">#A0A0A0</color>
     <color name="secondary_color">#808080</color>
@@ -18,6 +19,7 @@
     
     <!-- Text Colors -->
     <color name="text_primary">#FFFFFF</color>
+    <color name="text_primary_inverse">#000000</color>
     <color name="text_secondary">#C6C6C6</color>
     <color name="text_tertiary">#808080</color>
     <color name="text_hint">#606060</color>

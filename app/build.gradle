@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.expensetracker.ai"
-        minSdk 24
+        minSdk 26
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -77,6 +77,9 @@ dependencies {
     
     // Material Icons (included in Material Design Components)
     implementation 'com.google.android.material:material:1.6.1'
+    
+    // Google Sign-In for authentication
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
     
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
