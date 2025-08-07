@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             expenseViewModel.allExpenses.collect { expenses ->
                 // Show only the 5 most recent transactions on main screen
-                val recentExpenses = expenses.take(5)
+                val recentExpenses = expenses.take(3)
                 expenseAdapter.submitList(recentExpenses)
                 tvNoExpenses.visibility =
                         if (expenses.isEmpty()) {

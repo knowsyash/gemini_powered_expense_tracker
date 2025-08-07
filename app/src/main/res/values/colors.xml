@@ -66,4 +66,7 @@
     <color name="silver">#C6C6C6</color>
     <color name="dark_gray">#2A2A2A</color>
     <color name="neon_cyan">#00FFFF</color>
+    <color name="light_blue">#87CEEB</color>
+    <color name="button_blue">#87CEEB</color>
+    <color name="button_background_transparent">#8087CEEB</color>
 </resources>

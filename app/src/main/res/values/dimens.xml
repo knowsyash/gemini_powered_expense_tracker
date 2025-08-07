@@ -28,7 +28,7 @@
     <dimen name="button_height">48dp</dimen>
     <dimen name="button_height_large">56dp</dimen>
     <dimen name="button_corner_radius">8dp</dimen>
-    <dimen name="button_corner_radius_large">12dp</dimen>
+    <dimen name="button_corner_radius_large">20dp</dimen>
 
     <!-- Icon sizes -->
     <dimen name="icon_size_small">16dp</dimen>
