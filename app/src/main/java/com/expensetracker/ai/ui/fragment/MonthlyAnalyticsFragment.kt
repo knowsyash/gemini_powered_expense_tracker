@@ -302,7 +302,7 @@ class MonthlyAnalyticsFragment : Fragment() {
                             requireContext().getColor(android.R.color.holo_red_light)
                     )
                 }
-                
+
                 val displayFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
                 val todayCalendar = Calendar.getInstance()
                 todayCalendar.time = Date()
