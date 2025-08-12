@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -18,7 +19,6 @@ import com.expensetracker.ai.ui.activity.AnalyticsActivity
 import com.expensetracker.ai.ui.adapter.ExpenseAdapter
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModel
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModelFactory
-import com.google.android.material.button.MaterialButton
 import java.util.*
 import kotlinx.coroutines.launch
 
@@ -32,9 +32,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvExpenses: TextView
     private lateinit var recyclerViewExpenses: RecyclerView
     private lateinit var tvNoExpenses: View
-    private lateinit var fabAddExpense: MaterialButton
-    private lateinit var analyticsButton: MaterialButton
-    private lateinit var fabChat: MaterialButton
+    private lateinit var fabAddExpense: LinearLayout
+    private lateinit var analyticsButton: LinearLayout
+    private lateinit var fabChat: LinearLayout
     private lateinit var tvViewAll: TextView
 
     private val expenseViewModel: ExpenseViewModel by viewModels {

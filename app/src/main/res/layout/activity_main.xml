@@ -200,57 +200,92 @@
                         android:orientation="horizontal"
                         android:baselineAligned="false">
 
-                        <com.google.android.material.button.MaterialButton
+                        <!-- Manual Button -->
+                        <LinearLayout
                             android:id="@+id/fabAddExpense"
                             android:layout_width="0dp"
                             android:layout_height="@dimen/button_height_large"
                             android:layout_weight="1"
-                            android:text="Add Expense"
-                            android:textColor="@color/text_primary"
+                            android:orientation="vertical"
+                            android:gravity="center"
                             android:background="@drawable/gradient_button"
                             android:layout_marginEnd="@dimen/spacing_small"
-                            app:cornerRadius="@dimen/button_corner_radius_large"
-                            app:elevation="0dp"
-                            app:icon="@drawable/ic_add"
-                            app:iconTint="@color/text_primary"
-                            app:iconGravity="top"
-                            app:iconSize="@dimen/icon_size_medium" />
+                            android:clickable="true"
+                            android:focusable="true">
 
-                        <com.google.android.material.button.MaterialButton
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_add"
+                                android:layout_marginBottom="4dp"
+                                app:tint="@color/text_primary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Manual"
+                                android:textColor="@color/text_primary"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <!-- Track Button -->
+                        <LinearLayout
                             android:id="@+id/btnAnalytics"
                             android:layout_width="0dp"
                             android:layout_height="@dimen/button_height_large"
                             android:layout_weight="1"
-                            android:text="Analytics"
-                            android:textColor="@color/primary_color"
+                            android:orientation="vertical"
+                            android:gravity="center"
                             android:background="@drawable/modern_card_background"
                             android:layout_marginHorizontal="@dimen/spacing_xs"
-                            app:cornerRadius="@dimen/button_corner_radius_large"
-                            app:strokeColor="@color/primary_color"
-                            app:strokeWidth="1dp"
-                            app:elevation="0dp"
-                            app:icon="@drawable/ic_analytics"
-                            app:iconTint="@color/primary_color"
-                            app:iconGravity="top"
-                            app:iconSize="@dimen/icon_size_medium" />
+                            android:clickable="true"
+                            android:focusable="true">
 
-                        <com.google.android.material.button.MaterialButton
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_analytics"
+                                android:layout_marginBottom="4dp"
+                                app:tint="@color/primary_color" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Track"
+                                android:textColor="@color/primary_color"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <!-- Chat Button -->
+                        <LinearLayout
                             android:id="@+id/fabChat"
                             android:layout_width="0dp"
                             android:layout_height="@dimen/button_height_large"
                             android:layout_weight="1"
-                            android:text="AI Chat"
-                            android:textColor="@color/primary_color"
+                            android:orientation="vertical"
+                            android:gravity="center"
                             android:background="@drawable/modern_card_background"
                             android:layout_marginStart="@dimen/spacing_small"
-                            app:cornerRadius="@dimen/button_corner_radius_large"
-                            app:strokeColor="@color/primary_color"
-                            app:strokeWidth="1dp"
-                            app:elevation="0dp"
-                            app:icon="@drawable/chat"
-                            app:iconTint="@color/primary_color"
-                            app:iconGravity="top"
-                            app:iconSize="@dimen/icon_size_medium" />
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_chat"
+                                android:layout_marginBottom="4dp"
+                                app:tint="@color/primary_color" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Chat"
+                                android:textColor="@color/primary_color"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
