@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.expensetracker.ai.ExpenseTrackerApplication
 import com.expensetracker.ai.R
 import com.expensetracker.ai.data.repository.ExpenseRepository
-import com.expensetracker.ai.ui.adapter.ExpenseAdapter
 import com.expensetracker.ai.ui.activity.AllTransactionsActivity
 import com.expensetracker.ai.ui.activity.AnalyticsActivity
+import com.expensetracker.ai.ui.adapter.ExpenseAdapter
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModel
 import com.expensetracker.ai.ui.viewmodel.ExpenseViewModelFactory
 import com.google.android.material.button.MaterialButton
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         recyclerViewExpenses = findViewById(R.id.recyclerViewExpenses)
         tvNoExpenses = findViewById(R.id.tvNoExpenses)
         fabAddExpense = findViewById(R.id.fabAddExpense)
-         analyticsButton = findViewById(R.id.btnAnalytics)
+        analyticsButton = findViewById(R.id.btnAnalytics)
         fabChat = findViewById(R.id.fabChat)
         tvViewAll = findViewById(R.id.tvViewAll)
     }

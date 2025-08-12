@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -57,7 +58,7 @@ class DailyAnalyticsFragment : Fragment() {
                 tvDate.text = dayData.date
 
                 // Calculate bar height based on amount (max height 60dp, min 10dp)
-                val maxAmount = 1000.0 // You can make this dynamic based on max in dataset
+                val maxAmount = 2000.0 // Adjust based on your daily data range
                 val normalizedHeight =
                         ((Math.abs(netAmount) / maxAmount) * 50 + 10).coerceAtMost(60.0)
 
@@ -81,16 +82,19 @@ class DailyAnalyticsFragment : Fragment() {
         }
     }
 
+    // Navigation variables
+    private var currentDateOffset = 0
+    private lateinit var selectedDate: Date
+
     private lateinit var repository: ExpenseRepository
     private lateinit var tvTotalExpenses: TextView
     private lateinit var tvTotalIncome: TextView
     private lateinit var tvSelectedDate: TextView
     private lateinit var tvNetBalance: TextView
     private lateinit var recyclerViewDailyChart: RecyclerView
+    private lateinit var dailyChartAdapter: DailyChartAdapter
     private lateinit var btnPreviousDay: ImageButton
     private lateinit var btnNextDay: ImageButton
-    private val dailyChartAdapter by lazy { DailyChartAdapter() }
-    private var selectedDate = Date() // Track the currently selected date
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -103,71 +107,75 @@ class DailyAnalyticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        repository =
-                ExpenseRepository(
-                        (requireActivity().application as ExpenseTrackerApplication).database
-                                .expenseDao()
-                )
+        try {
+            repository =
+                    ExpenseRepository(
+                            (requireActivity().application as ExpenseTrackerApplication).database
+                                    .expenseDao()
+                    )
 
-        initViews(view)
-        loadDailyData()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Refresh data when fragment becomes visible again (e.g., after adding expense)
-        if (::repository.isInitialized) {
+            initViews(view)
             loadDailyData()
-        }
-    }
-
-    fun refreshData() {
-        if (::repository.isInitialized) {
-            loadDailyDataForDate(selectedDate)
+        } catch (e: Exception) {
+            println("Error initializing DailyAnalyticsFragment: ${e.message}")
+            e.printStackTrace()
         }
     }
 
     private fun initViews(view: View) {
-        tvTotalExpenses = view.findViewById(R.id.tvTotalExpenses)
-        tvTotalIncome = view.findViewById(R.id.tvTotalIncome)
-        tvSelectedDate = view.findViewById(R.id.tvSelectedDate)
-        tvNetBalance = view.findViewById(R.id.tvNetBalance)
-        recyclerViewDailyChart = view.findViewById(R.id.recyclerViewDailyChart)
-        btnPreviousDay = view.findViewById(R.id.btnPreviousDay)
-        btnNextDay = view.findViewById(R.id.btnNextDay)
+        try {
+            tvTotalExpenses = view.findViewById(R.id.tvTotalExpenses)
+            tvTotalIncome = view.findViewById(R.id.tvTotalIncome)
+            tvSelectedDate = view.findViewById(R.id.tvSelectedDate)
+            tvNetBalance = view.findViewById(R.id.tvNetBalance)
+            recyclerViewDailyChart = view.findViewById(R.id.recyclerViewDailyChart)
+            btnPreviousDay = view.findViewById(R.id.btnPreviousDay)
+            btnNextDay = view.findViewById(R.id.btnNextDay)
 
-        // Setup RecyclerView
-        recyclerViewDailyChart.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            adapter = dailyChartAdapter
+            // Setup navigation buttons
+            btnPreviousDay.setOnClickListener {
+                currentDateOffset--
+                val calendar = Calendar.getInstance()
+                calendar.time = Date()
+                calendar.add(Calendar.DAY_OF_YEAR, currentDateOffset)
+                selectedDate = calendar.time
+                Toast.makeText(context, "Previous Day", Toast.LENGTH_SHORT).show()
+                loadDailyDataForDate(selectedDate)
+                updateNavigationButtons()
+            }
+
+            btnNextDay.setOnClickListener {
+                if (currentDateOffset < 0) {
+                    currentDateOffset++
+                    val calendar = Calendar.getInstance()
+                    calendar.time = Date()
+                    calendar.add(Calendar.DAY_OF_YEAR, currentDateOffset)
+                    selectedDate = calendar.time
+                    Toast.makeText(context, "Next Day", Toast.LENGTH_SHORT).show()
+                    loadDailyDataForDate(selectedDate)
+                    updateNavigationButtons()
+                }
+            }
+
+            // Setup RecyclerView
+            dailyChartAdapter = DailyChartAdapter()
+            recyclerViewDailyChart.apply {
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                adapter = dailyChartAdapter
+            }
+        } catch (e: Exception) {
+            println("Error initializing views: ${e.message}")
+            e.printStackTrace()
         }
-
-        // Setup navigation buttons
-        btnPreviousDay.setOnClickListener {
-            navigateToDate(-1)
-        }
-
-        btnNextDay.setOnClickListener {
-            navigateToDate(1)
-        }
-    }
-
-    private fun navigateToDate(dayOffset: Int) {
-        val calendar = Calendar.getInstance()
-        calendar.time = selectedDate
-        calendar.add(Calendar.DAY_OF_YEAR, dayOffset)
-        selectedDate = calendar.time
-        loadDailyDataForDate(selectedDate)
-        updateNavigationButtons()
     }
 
     private fun updateNavigationButtons() {
+        // Hide/disable next button if selected date is today or later
         val today = Date()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val selectedDateString = dateFormat.format(selectedDate)
         val todayString = dateFormat.format(today)
-        
-        // Hide/disable next button if selected date is today or later
+
         if (selectedDateString >= todayString) {
             btnNextDay.visibility = View.INVISIBLE
         } else {
@@ -248,21 +256,36 @@ class DailyAnalyticsFragment : Fragment() {
                 val totalIncome = selectedDateExpenses.filter { it.isIncome }.sumOf { it.amount }
                 val netBalance = totalIncome - totalExpense
 
-                // Update UI with selected date data
                 tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
                 tvTotalIncome.text = "₹${String.format("%.2f", totalIncome)}"
-                tvNetBalance.text = "₹${String.format("%.2f", netBalance)}"
-                
-                val today = Date()
-                if (dateFormat.format(targetDate) == dateFormat.format(today)) {
-                    tvSelectedDate.text = "Today: ${displayFormat.format(targetDate)}"
+
+                // Format net balance with proper sign and color indication
+                if (netBalance >= 0) {
+                    tvNetBalance.text = "₹${String.format("%.2f", netBalance)}"
+                    tvNetBalance.setTextColor(
+                            requireContext().getColor(android.R.color.holo_green_light)
+                    )
                 } else {
-                    tvSelectedDate.text = displayFormat.format(targetDate)
+                    tvNetBalance.text = "-₹${String.format("%.2f", Math.abs(netBalance))}"
+                    tvNetBalance.setTextColor(
+                            requireContext().getColor(android.R.color.holo_red_light)
+                    )
                 }
 
-                // Update navigation buttons after loading data
-                updateNavigationButtons()
+                val todayCalendar = Calendar.getInstance()
+                todayCalendar.time = Date()
 
+                val dateText =
+                        when (currentDateOffset) {
+                            0 -> "Today: ${displayFormat.format(targetDate)}"
+                            -1 -> "Yesterday: ${displayFormat.format(targetDate)}"
+                            else -> displayFormat.format(targetDate)
+                        }
+                tvSelectedDate.text = dateText
+
+                println(
+                        "Selected date totals - Income: $totalIncome, Expense: $totalExpense, Net: $netBalance"
+                )
             } catch (e: Exception) {
                 println("Error loading daily data: ${e.message}")
                 e.printStackTrace()
@@ -272,5 +295,9 @@ class DailyAnalyticsFragment : Fragment() {
                 tvSelectedDate.text = "Error: ${e.message}"
             }
         }
+    }
+
+    fun refreshData() {
+        loadDailyData()
     }
 }

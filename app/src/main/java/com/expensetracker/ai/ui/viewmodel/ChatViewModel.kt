@@ -80,83 +80,83 @@ How can I help you today?"""
 
         fun sendMessage(userMessage: String) {
                 // Check if user wants to clear chat FIRST (before transaction deletion checks)
-                if (userMessage.toLowerCase().contains("clear all chat") ||
-                                userMessage.toLowerCase().contains("clear chat") ||
-                                userMessage.toLowerCase().contains("clear previous chat") ||
-                                userMessage.toLowerCase().contains("delete all chat") ||
-                                userMessage.toLowerCase().contains("delete all chats") ||
-                                userMessage.toLowerCase().contains("delete chat") ||
-                                userMessage.toLowerCase().contains("delete chats") ||
-                                (userMessage.toLowerCase().contains("clear all") &&
-                                        !userMessage.toLowerCase().contains("transaction"))
+                if (userMessage.lowercase().contains("clear all chat") ||
+                                userMessage.lowercase().contains("clear chat") ||
+                                userMessage.lowercase().contains("clear previous chat") ||
+                                userMessage.lowercase().contains("delete all chat") ||
+                                userMessage.lowercase().contains("delete all chats") ||
+                                userMessage.lowercase().contains("delete chat") ||
+                                userMessage.lowercase().contains("delete chats") ||
+                                (userMessage.lowercase().contains("clear all") &&
+                                        !userMessage.lowercase().contains("transaction"))
                 ) {
                         clearAllMessages()
                         return
                 }
 
                 // Check if user wants to delete all transactions
-                if (userMessage.toLowerCase().contains("delete all transaction") ||
-                                userMessage.toLowerCase().contains("delete all transactions") ||
-                                userMessage.toLowerCase().contains("clear all transaction") ||
-                                userMessage.toLowerCase().contains("clear all transactions") ||
-                                userMessage.toLowerCase().contains("remove all transaction") ||
-                                userMessage.toLowerCase().contains("remove all transactions") ||
-                                userMessage.toLowerCase().contains("clear transaction") ||
-                                userMessage.toLowerCase().contains("clear transactions") ||
-                                userMessage.toLowerCase().contains("delete transaction") ||
-                                userMessage.toLowerCase().contains("delete transactions")
+                if (userMessage.lowercase().contains("delete all transaction") ||
+                                userMessage.lowercase().contains("delete all transactions") ||
+                                userMessage.lowercase().contains("clear all transaction") ||
+                                userMessage.lowercase().contains("clear all transactions") ||
+                                userMessage.lowercase().contains("remove all transaction") ||
+                                userMessage.lowercase().contains("remove all transactions") ||
+                                userMessage.lowercase().contains("clear transaction") ||
+                                userMessage.lowercase().contains("clear transactions") ||
+                                userMessage.lowercase().contains("delete transaction") ||
+                                userMessage.lowercase().contains("delete transactions")
                 ) {
                         deleteAllTransactions(userMessage)
                         return
                 }
 
                 // Check if user wants to delete recent transactions
-                if (userMessage.toLowerCase().contains("clear recent") ||
-                                userMessage.toLowerCase().contains("delete recent") ||
-                                userMessage.toLowerCase().contains("remove recent") ||
-                                userMessage.toLowerCase().contains("clear last") ||
-                                userMessage.toLowerCase().contains("delete last") ||
-                                userMessage.toLowerCase().contains("remove last")
+                if (userMessage.lowercase().contains("clear recent") ||
+                                userMessage.lowercase().contains("delete recent") ||
+                                userMessage.lowercase().contains("remove recent") ||
+                                userMessage.lowercase().contains("clear last") ||
+                                userMessage.lowercase().contains("delete last") ||
+                                userMessage.lowercase().contains("remove last")
                 ) {
                         deleteRecentTransactions(userMessage)
                         return
                 }
 
                 // Check if user asks for categories
-                if (userMessage.toLowerCase().contains("categories") ||
-                                userMessage.toLowerCase().contains("what are the categories")
+                if (userMessage.lowercase().contains("categories") ||
+                                userMessage.lowercase().contains("what are the categories")
                 ) {
                         showCategories(userMessage)
                         return
                 }
 
                 // Check if user asks for specific date transactions
-                if (userMessage.toLowerCase().contains("transaction") &&
-                                (userMessage.toLowerCase().contains("on") ||
-                                        userMessage.toLowerCase().contains("from") ||
-                                        userMessage.toLowerCase().contains("sunday") ||
-                                        userMessage.toLowerCase().contains("monday") ||
-                                        userMessage.toLowerCase().contains("tuesday") ||
-                                        userMessage.toLowerCase().contains("wednesday") ||
-                                        userMessage.toLowerCase().contains("thursday") ||
-                                        userMessage.toLowerCase().contains("friday") ||
-                                        userMessage.toLowerCase().contains("saturday") ||
-                                        userMessage.toLowerCase().contains("january") ||
-                                        userMessage.toLowerCase().contains("february") ||
-                                        userMessage.toLowerCase().contains("march") ||
-                                        userMessage.toLowerCase().contains("april") ||
-                                        userMessage.toLowerCase().contains("may") ||
-                                        userMessage.toLowerCase().contains("june") ||
-                                        userMessage.toLowerCase().contains("july") ||
-                                        userMessage.toLowerCase().contains("august") ||
-                                        userMessage.toLowerCase().contains("september") ||
-                                        userMessage.toLowerCase().contains("october") ||
-                                        userMessage.toLowerCase().contains("november") ||
-                                        userMessage.toLowerCase().contains("december") ||
-                                        userMessage.toLowerCase().contains("today") ||
-                                        userMessage.toLowerCase().contains("yesterday") ||
-                                        userMessage.toLowerCase().contains("last week") ||
-                                        userMessage.toLowerCase().contains("this week"))
+                if (userMessage.lowercase().contains("transaction") &&
+                                (userMessage.lowercase().contains("on") ||
+                                        userMessage.lowercase().contains("from") ||
+                                        userMessage.lowercase().contains("sunday") ||
+                                        userMessage.lowercase().contains("monday") ||
+                                        userMessage.lowercase().contains("tuesday") ||
+                                        userMessage.lowercase().contains("wednesday") ||
+                                        userMessage.lowercase().contains("thursday") ||
+                                        userMessage.lowercase().contains("friday") ||
+                                        userMessage.lowercase().contains("saturday") ||
+                                        userMessage.lowercase().contains("january") ||
+                                        userMessage.lowercase().contains("february") ||
+                                        userMessage.lowercase().contains("march") ||
+                                        userMessage.lowercase().contains("april") ||
+                                        userMessage.lowercase().contains("may") ||
+                                        userMessage.lowercase().contains("june") ||
+                                        userMessage.lowercase().contains("july") ||
+                                        userMessage.lowercase().contains("august") ||
+                                        userMessage.lowercase().contains("september") ||
+                                        userMessage.lowercase().contains("october") ||
+                                        userMessage.lowercase().contains("november") ||
+                                        userMessage.lowercase().contains("december") ||
+                                        userMessage.lowercase().contains("today") ||
+                                        userMessage.lowercase().contains("yesterday") ||
+                                        userMessage.lowercase().contains("last week") ||
+                                        userMessage.lowercase().contains("this week"))
                 ) {
                         searchTransactionsByDate(userMessage)
                         return
@@ -272,7 +272,7 @@ How can I help you today?"""
                 )
 
                 // Extract category
-                val category = extractCategory(message.toLowerCase())
+                val category = extractCategory(message.lowercase())
 
                 // Create description
                 val description = if (message.length > 50) message.take(47) + "..." else message
@@ -327,12 +327,11 @@ Your $type has been recorded in the system.
                                 "✅ Local classifier result: ${if (localResult) "INCOME" else "EXPENSE"}"
                         )
                         return localResult
-                }
-
-                // If local classifier is unsure, try Gemini API
-                return try {
-                        val prompt =
-                                """
+                } else {
+                        // If local classifier is unsure, try Gemini API
+                        return try {
+                                val prompt =
+                                        """
 Classify this financial transaction as INCOME or EXPENSE:
 
 "$message"
@@ -343,71 +342,80 @@ EXPENSE (money spent): spent, paid, bought, cost, lost, gave to, paid for
 Reply with only: INCOME or EXPENSE
 """
 
-                        val request =
-                                GeminiRequest(
-                                        contents = listOf(Content(parts = listOf(Part(prompt))))
-                                )
-                        val response =
-                                RetrofitClient.geminiApiService.generateContent(
-                                        apiKey = Constants.GEMINI_API_KEY,
-                                        request = request
-                                )
+                                val request =
+                                        GeminiRequest(
+                                                contents =
+                                                        listOf(
+                                                                Content(
+                                                                        parts = listOf(Part(prompt))
+                                                                )
+                                                        )
+                                        )
+                                val response =
+                                        RetrofitClient.geminiApiService.generateContent(
+                                                apiKey = Constants.GEMINI_API_KEY,
+                                                request = request
+                                        )
 
-                        if (response.isSuccessful && response.body() != null) {
-                                val aiResponse =
-                                        response.body()!!
-                                                .candidates
-                                                .firstOrNull()
-                                                ?.content
-                                                ?.parts
-                                                ?.firstOrNull()
-                                                ?.text
-                                                ?.trim()
-                                                ?.uppercase()
+                                if (response.isSuccessful && response.body() != null) {
+                                        val aiResponse =
+                                                response.body()!!
+                                                        .candidates
+                                                        .firstOrNull()
+                                                        ?.content
+                                                        ?.parts
+                                                        ?.firstOrNull()
+                                                        ?.text
+                                                        ?.trim()
+                                                        ?.uppercase()
 
-                                android.util.Log.d(
-                                        "ChatViewModel",
-                                        "🤖 Gemini AI Response: '$aiResponse' for message: '$message'"
-                                )
+                                        android.util.Log.d(
+                                                "ChatViewModel",
+                                                "🤖 Gemini AI Response: '$aiResponse' for message: '$message'"
+                                        )
 
-                                return when (aiResponse) {
-                                        "INCOME" -> {
-                                                android.util.Log.d(
-                                                        "ChatViewModel",
-                                                        "✅ AI: INCOME confirmed for '$message'"
-                                                )
-                                                true
+                                        return when (aiResponse) {
+                                                "INCOME" -> {
+                                                        android.util.Log.d(
+                                                                "ChatViewModel",
+                                                                "✅ AI: INCOME confirmed for '$message'"
+                                                        )
+                                                        true
+                                                }
+                                                "EXPENSE" -> {
+                                                        android.util.Log.d(
+                                                                "ChatViewModel",
+                                                                "✅ AI: EXPENSE confirmed for '$message'"
+                                                        )
+                                                        false
+                                                }
+                                                else -> {
+                                                        android.util.Log.w(
+                                                                "ChatViewModel",
+                                                                "⚠️ AI unclear response: '$aiResponse'. Using fallback for '$message'"
+                                                        )
+                                                        fallbackTransactionClassification(message)
+                                                }
                                         }
-                                        "EXPENSE" -> {
-                                                android.util.Log.d(
-                                                        "ChatViewModel",
-                                                        "✅ AI: EXPENSE confirmed for '$message'"
-                                                )
-                                                false
-                                        }
-                                        else -> {
-                                                android.util.Log.w(
-                                                        "ChatViewModel",
-                                                        "⚠️ AI unclear response: '$aiResponse'. Using fallback for '$message'"
-                                                )
-                                                fallbackTransactionClassification(message)
-                                        }
+                                } else {
+                                        android.util.Log.e(
+                                                "ChatViewModel",
+                                                "❌ Gemini API request failed. Response code: ${response.code()}"
+                                        )
+                                        return fallbackTransactionClassification(message)
                                 }
-                        } else {
+                        } catch (e: Exception) {
                                 android.util.Log.e(
                                         "ChatViewModel",
-                                        "❌ Gemini API request failed. Response code: ${response.code()}"
+                                        "❌ Gemini API exception: ${e.message}"
                                 )
                                 return fallbackTransactionClassification(message)
                         }
-                } catch (e: Exception) {
-                        android.util.Log.e("ChatViewModel", "❌ Gemini API exception: ${e.message}")
-                        return fallbackTransactionClassification(message)
                 }
         }
 
         private fun improvedLocalClassifier(message: String): Boolean? {
-                val lowerMessage = message.toLowerCase()
+                val lowerMessage = message.lowercase()
                 android.util.Log.d("ChatViewModel", "🔍 Local classifier analyzing: '$message'")
 
                 // Strong INCOME indicators with high confidence
@@ -488,7 +496,7 @@ Reply with only: INCOME or EXPENSE
         }
 
         private fun fallbackTransactionClassification(message: String): Boolean {
-                val lowerMessage = message.toLowerCase()
+                val lowerMessage = message.lowercase()
                 android.util.Log.d(
                         "ChatViewModel",
                         "🔄 Using enhanced fallback classification for: '$message'"
@@ -681,7 +689,7 @@ Reply with only: INCOME or EXPENSE
         }
 
         private suspend fun tryHandleBalanceQuery(message: String): String? {
-                val lowerMessage = message.toLowerCase()
+                val lowerMessage = message.lowercase()
 
                 if (lowerMessage.contains("balance") ||
                                 lowerMessage.contains("total") ||
@@ -1233,11 +1241,11 @@ Please try again later.
                         val today = Calendar.getInstance()
 
                         // Handle "today" or "29 july" or "july 29" patterns
-                        if (userQuery.toLowerCase().contains("today") ||
-                                        userQuery.toLowerCase().contains("29 july") ||
-                                        userQuery.toLowerCase().contains("july 29") ||
-                                        userQuery.toLowerCase().contains("29th july") ||
-                                        userQuery.toLowerCase().contains("july 29th")
+                        if (userQuery.lowercase().contains("today") ||
+                                        userQuery.lowercase().contains("29 july") ||
+                                        userQuery.lowercase().contains("july 29") ||
+                                        userQuery.lowercase().contains("29th july") ||
+                                        userQuery.lowercase().contains("july 29th")
                         ) {
 
                                 // Set to today (July 29, 2025)
