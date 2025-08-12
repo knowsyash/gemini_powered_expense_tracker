@@ -85,8 +85,9 @@ class MonthlyAnalyticsFragment : Fragment() {
 
     private lateinit var repository: ExpenseRepository
     private lateinit var budgetRepository: BudgetRepository
-    private lateinit var tvTotalExpenses: TextView
+    private lateinit var tvTotalBudget: TextView
     private lateinit var tvTotalIncome: TextView
+    private lateinit var tvTotalExpenses: TextView
     private lateinit var tvSelectedMonth: TextView
     private lateinit var tvNetBalance: TextView
     private lateinit var tvBudgetInfo: TextView
@@ -128,8 +129,9 @@ class MonthlyAnalyticsFragment : Fragment() {
     }
 
     private fun initViews(view: View) {
-        tvTotalExpenses = view.findViewById(R.id.tvTotalExpenses)
+        tvTotalBudget = view.findViewById(R.id.tvTotalBudget)
         tvTotalIncome = view.findViewById(R.id.tvTotalIncome)
+        tvTotalExpenses = view.findViewById(R.id.tvTotalExpenses)
         tvSelectedMonth = view.findViewById(R.id.tvSelectedMonth)
         tvNetBalance = view.findViewById(R.id.tvNetBalance)
         tvBudgetInfo = view.findViewById(R.id.tvBudgetInfo)
@@ -281,12 +283,13 @@ class MonthlyAnalyticsFragment : Fragment() {
                 val budget = budgetRepository.getBudgetForMonth(targetMonth, targetYear)
 
                 tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
+                tvTotalIncome.text = "₹${String.format("%.2f", totalIncome)}"
                 
-                // Display budget amount in the income field instead of actual income
+                // Display budget amount in the budget field
                 if (budget != null) {
-                    tvTotalIncome.text = "₹${String.format("%.2f", budget.amount)}"
+                    tvTotalBudget.text = "₹${String.format("%.2f", budget.amount)}"
                 } else {
-                    tvTotalIncome.text = "₹0.00" // No budget set
+                    tvTotalBudget.text = "₹0.00" // No budget set
                 }
 
                 // Update budget information with detailed remaining calculation
