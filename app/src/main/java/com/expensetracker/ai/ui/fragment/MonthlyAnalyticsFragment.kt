@@ -129,14 +129,33 @@ class MonthlyAnalyticsFragment : Fragment() {
         btnPreviousMonth.setOnClickListener {
             currentMonthOffset--
             loadMonthlyData()
+            updateNavigationButtons()
             Toast.makeText(context, "Showing previous month", Toast.LENGTH_SHORT).show()
         }
 
         btnNextMonth.setOnClickListener {
-            currentMonthOffset++
-            loadMonthlyData()
-            Toast.makeText(context, "Showing next month", Toast.LENGTH_SHORT).show()
+            // Don't allow going beyond current month
+            if (currentMonthOffset < 0) {
+                currentMonthOffset++
+                loadMonthlyData()
+                updateNavigationButtons()
+                Toast.makeText(context, "Showing next month", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Cannot view future months", Toast.LENGTH_SHORT).show()
+            }
         }
+        
+        // Initial button state update
+        updateNavigationButtons()
+    }
+
+    private fun updateNavigationButtons() {
+        // Enable/disable navigation buttons based on current position
+        btnPreviousMonth.isEnabled = true // Always allow going to previous months
+        btnNextMonth.isEnabled = currentMonthOffset < 0 // Only allow next if we're in past months
+        
+        // Update button appearance
+        btnNextMonth.alpha = if (btnNextMonth.isEnabled) 1.0f else 0.5f
     }
 
     private fun loadMonthlyData() {
@@ -272,6 +291,9 @@ class MonthlyAnalyticsFragment : Fragment() {
 
                     println("Specific month - Income: $totalIncome, Expense: $totalExpense, Net: $netBalance")
                 }
+                
+                // Update navigation buttons after loading data
+                updateNavigationButtons()
                 
             } catch (e: Exception) {
                 println("Error loading monthly data: ${e.message}")

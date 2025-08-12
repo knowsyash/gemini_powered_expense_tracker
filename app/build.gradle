@@ -6,6 +6,7 @@ plugins {
 }
 
 android {
+    namespace 'com.expensetracker.ai'
     compileSdk 32
 
     defaultConfig {

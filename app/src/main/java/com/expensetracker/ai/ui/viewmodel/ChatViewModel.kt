@@ -16,6 +16,7 @@ import kotlin.random.Random
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@OptIn(kotlin.ExperimentalStdlibApi::class)
 class ChatViewModel(
         private val chatMessageRepository: ChatMessageRepository,
         private val expenseRepository: ExpenseRepository
