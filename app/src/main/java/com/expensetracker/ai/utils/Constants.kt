@@ -1,8 +1,8 @@
 package com.expensetracker.ai.utils
 
 object Constants {
-    // Gemini API key
-    const val GEMINI_API_KEY = "AIzaSyBSkWGm4z-WFLLVPMyrRRfkHf8UC3oj4cc"
+    // Gemini API key - Replace with your actual API key
+    const val GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"
     
     // Expense categories
     val EXPENSE_CATEGORIES = listOf(
