@@ -90,7 +90,6 @@ class MonthlyAnalyticsFragment : Fragment() {
     private lateinit var tvTotalExpenses: TextView
     private lateinit var tvSelectedMonth: TextView
     private lateinit var tvNetBalance: TextView
-    private lateinit var tvBudgetInfo: TextView
     private lateinit var recyclerViewMonthlyChart: RecyclerView
     private lateinit var monthlyChartAdapter: MonthlyChartAdapter
     private lateinit var btnPreviousMonth: ImageButton
@@ -134,7 +133,6 @@ class MonthlyAnalyticsFragment : Fragment() {
         tvTotalExpenses = view.findViewById(R.id.tvTotalExpenses)
         tvSelectedMonth = view.findViewById(R.id.tvSelectedMonth)
         tvNetBalance = view.findViewById(R.id.tvNetBalance)
-        tvBudgetInfo = view.findViewById(R.id.tvBudgetInfo)
         recyclerViewMonthlyChart = view.findViewById(R.id.recyclerViewMonthlyChart)
         btnPreviousMonth = view.findViewById(R.id.btnPreviousMonth)
         btnNextMonth = view.findViewById(R.id.btnNextMonth)
@@ -292,85 +290,19 @@ class MonthlyAnalyticsFragment : Fragment() {
                     tvTotalBudget.text = "₹0.00" // No budget set
                 }
 
-                // Update budget information with detailed remaining calculation
-                if (budget != null) {
-                    val remaining = budget.amount - totalExpense
-                    val percentageUsed =
-                            if (budget.amount > 0) (totalExpense / budget.amount * 100).toInt()
-                            else 0
-
-                    when {
-                        remaining > 0 -> {
-                            tvBudgetInfo.text =
-                                    "Budget: ₹${String.format("%.2f", budget.amount)}\n" +
-                                            "Remaining: ₹${String.format("%.2f", remaining)}\n" +
-                                            "Used: $percentageUsed%"
-                            tvBudgetInfo.setTextColor(
-                                    requireContext().getColor(android.R.color.holo_green_light)
-                            )
-                        }
-                        remaining == 0.0 -> {
-                            tvBudgetInfo.text =
-                                    "Budget: ₹${String.format("%.2f", budget.amount)}\n" +
-                                            "Budget exactly met!\n" +
-                                            "Used: 100%"
-                            tvBudgetInfo.setTextColor(
-                                    requireContext().getColor(android.R.color.holo_orange_light)
-                            )
-                        }
-                        else -> {
-                            tvBudgetInfo.text =
-                                    "Budget: ₹${String.format("%.2f", budget.amount)}\n" +
-                                            "Over budget by: ₹${String.format("%.2f", -remaining)}\n" +
-                                            "Used: $percentageUsed%"
-                            tvBudgetInfo.setTextColor(
-                                    requireContext().getColor(android.R.color.holo_red_light)
-                            )
-                        }
-                    }
-
-                    // Show remaining budget balance instead of net balance
-                    when {
-                        remaining > 0 -> {
-                            tvNetBalance.text = "₹${String.format("%.2f", remaining)}"
-                            tvNetBalance.setTextColor(
-                                    requireContext().getColor(android.R.color.holo_green_light)
-                            )
-                        }
-                        remaining == 0.0 -> {
-                            tvNetBalance.text = "₹0.00"
-                            tvNetBalance.setTextColor(
-                                    requireContext().getColor(android.R.color.holo_orange_light)
-                            )
-                        }
-                        else -> {
-                            tvNetBalance.text = "-₹${String.format("%.2f", Math.abs(remaining))}"
-                            tvNetBalance.setTextColor(
-                                    requireContext().getColor(android.R.color.holo_red_light)
-                            )
-                        }
-                    }
-                } else {
-                    tvBudgetInfo.text =
-                            "No budget set for this month\nSet budget via chat: \"My budget is ₹5000\""
-                    tvBudgetInfo.setTextColor(
-                            requireContext().getColor(android.R.color.darker_gray)
+                // Show simple net balance (income - expenses)
+                if (netBalance >= 0) {
+                    tvNetBalance.text = "₹${String.format("%.2f", netBalance)}"
+                    tvNetBalance.setTextColor(
+                            requireContext().getColor(android.R.color.holo_green_light)
                     )
-
-                    // Show net balance when no budget is set
-                    if (netBalance >= 0) {
-                        tvNetBalance.text = "₹${String.format("%.2f", netBalance)}"
-                        tvNetBalance.setTextColor(
-                                requireContext().getColor(android.R.color.holo_green_light)
-                        )
-                    } else {
-                        tvNetBalance.text = "-₹${String.format("%.2f", Math.abs(netBalance))}"
-                        tvNetBalance.setTextColor(
-                                requireContext().getColor(android.R.color.holo_red_light)
-                        )
-                    }
+                } else {
+                    tvNetBalance.text = "-₹${String.format("%.2f", Math.abs(netBalance))}"
+                    tvNetBalance.setTextColor(
+                            requireContext().getColor(android.R.color.holo_red_light)
+                    )
                 }
-
+                
                 val displayFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
                 val todayCalendar = Calendar.getInstance()
                 todayCalendar.time = Date()
