@@ -20,7 +20,8 @@ class ChatActivity : AppCompatActivity() {
     private val chatViewModel: ChatViewModel by viewModels {
         ChatViewModel.Factory(
                 (application as ExpenseTrackerApplication).chatMessageRepository,
-                (application as ExpenseTrackerApplication).expenseRepository
+                (application as ExpenseTrackerApplication).expenseRepository,
+                (application as ExpenseTrackerApplication).budgetRepository
         )
     }
 

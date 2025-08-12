@@ -3,6 +3,7 @@ package com.expensetracker.ai
 import android.app.Application
 import androidx.work.*
 import com.expensetracker.ai.data.database.ExpenseDatabase
+import com.expensetracker.ai.data.repository.BudgetRepository
 import com.expensetracker.ai.data.repository.ChatMessageRepository
 import com.expensetracker.ai.data.repository.ExpenseRepository
 import com.expensetracker.ai.data.repository.FinancialInsightRepository
@@ -23,6 +24,8 @@ class ExpenseTrackerApplication : Application() {
     }
 
     val chatMessageRepository by lazy { ChatMessageRepository(database.chatMessageDao()) }
+
+    val budgetRepository by lazy { BudgetRepository(database.budgetDao()) }
 
     override fun onCreate() {
         super.onCreate()

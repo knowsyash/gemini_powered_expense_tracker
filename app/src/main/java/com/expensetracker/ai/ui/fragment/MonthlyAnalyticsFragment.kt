@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.expensetracker.ai.ExpenseTrackerApplication
 import com.expensetracker.ai.R
+import com.expensetracker.ai.data.repository.BudgetRepository
 import com.expensetracker.ai.data.repository.ExpenseRepository
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,8 +34,9 @@ class MonthlyAnalyticsFragment : Fragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MonthViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_daily_chart, parent, false)
+            val view =
+                    LayoutInflater.from(parent.context)
+                            .inflate(R.layout.item_daily_chart, parent, false)
             return MonthViewHolder(view)
         }
 
@@ -58,27 +60,36 @@ class MonthlyAnalyticsFragment : Fragment() {
 
                 // Calculate bar height based on amount (max height 60dp, min 10dp)
                 val maxAmount = 5000.0 // Adjust based on your data range
-                val normalizedHeight = ((Math.abs(netAmount) / maxAmount) * 50 + 10).coerceAtMost(60.0)
+                val normalizedHeight =
+                        ((Math.abs(netAmount) / maxAmount) * 50 + 10).coerceAtMost(60.0)
 
                 val layoutParams = viewBar.layoutParams
-                layoutParams.height = (normalizedHeight * itemView.context.resources.displayMetrics.density).toInt()
+                layoutParams.height =
+                        (normalizedHeight * itemView.context.resources.displayMetrics.density)
+                                .toInt()
                 viewBar.layoutParams = layoutParams
 
                 // Color the bar based on income vs expense
                 if (netAmount >= 0) {
-                    viewBar.setBackgroundColor(itemView.context.getColor(android.R.color.holo_green_light))
+                    viewBar.setBackgroundColor(
+                            itemView.context.getColor(android.R.color.holo_green_light)
+                    )
                 } else {
-                    viewBar.setBackgroundColor(itemView.context.getColor(android.R.color.holo_red_light))
+                    viewBar.setBackgroundColor(
+                            itemView.context.getColor(android.R.color.holo_red_light)
+                    )
                 }
             }
         }
     }
 
     private lateinit var repository: ExpenseRepository
+    private lateinit var budgetRepository: BudgetRepository
     private lateinit var tvTotalExpenses: TextView
     private lateinit var tvTotalIncome: TextView
     private lateinit var tvSelectedMonth: TextView
     private lateinit var tvNetBalance: TextView
+    private lateinit var tvBudgetInfo: TextView
     private lateinit var recyclerViewMonthlyChart: RecyclerView
     private lateinit var monthlyChartAdapter: MonthlyChartAdapter
     private lateinit var btnPreviousMonth: ImageButton
@@ -87,9 +98,9 @@ class MonthlyAnalyticsFragment : Fragment() {
     private var currentMonthOffset = 0
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View {
         return inflater.inflate(R.layout.fragment_monthly_analytics, container, false)
     }
@@ -98,9 +109,16 @@ class MonthlyAnalyticsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         try {
-            repository = ExpenseRepository(
-                (requireActivity().application as ExpenseTrackerApplication).database.expenseDao()
-            )
+            repository =
+                    ExpenseRepository(
+                            (requireActivity().application as ExpenseTrackerApplication).database
+                                    .expenseDao()
+                    )
+            budgetRepository =
+                    BudgetRepository(
+                            (requireActivity().application as ExpenseTrackerApplication).database
+                                    .budgetDao()
+                    )
 
             initViews(view)
             loadMonthlyData()
@@ -114,6 +132,7 @@ class MonthlyAnalyticsFragment : Fragment() {
         tvTotalIncome = view.findViewById(R.id.tvTotalIncome)
         tvSelectedMonth = view.findViewById(R.id.tvSelectedMonth)
         tvNetBalance = view.findViewById(R.id.tvNetBalance)
+        tvBudgetInfo = view.findViewById(R.id.tvBudgetInfo)
         recyclerViewMonthlyChart = view.findViewById(R.id.recyclerViewMonthlyChart)
         btnPreviousMonth = view.findViewById(R.id.btnPreviousMonth)
         btnNextMonth = view.findViewById(R.id.btnNextMonth)
@@ -144,7 +163,7 @@ class MonthlyAnalyticsFragment : Fragment() {
                 Toast.makeText(context, "Cannot view future months", Toast.LENGTH_SHORT).show()
             }
         }
-        
+
         // Initial button state update
         updateNavigationButtons()
     }
@@ -153,7 +172,7 @@ class MonthlyAnalyticsFragment : Fragment() {
         // Enable/disable navigation buttons based on current position
         btnPreviousMonth.isEnabled = true // Always allow going to previous months
         btnNextMonth.isEnabled = currentMonthOffset < 0 // Only allow next if we're in past months
-        
+
         // Update button appearance
         btnNextMonth.alpha = if (btnNextMonth.isEnabled) 1.0f else 0.5f
     }
@@ -189,16 +208,21 @@ class MonthlyAnalyticsFragment : Fragment() {
                     val monthStart = calendar.time
 
                     // Get last day of the month
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+                    calendar.set(
+                            Calendar.DAY_OF_MONTH,
+                            calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                    )
                     calendar.set(Calendar.HOUR_OF_DAY, 23)
                     calendar.set(Calendar.MINUTE, 59)
                     calendar.set(Calendar.SECOND, 59)
                     calendar.set(Calendar.MILLISECOND, 999)
                     val monthEnd = calendar.time
 
-                    val monthExpenses = allExpenses.filter { expense ->
-                        expense.date.time >= monthStart.time && expense.date.time <= monthEnd.time
-                    }
+                    val monthExpenses =
+                            allExpenses.filter { expense ->
+                                expense.date.time >= monthStart.time &&
+                                        expense.date.time <= monthEnd.time
+                            }
 
                     val totalExpense = monthExpenses.filter { !it.isIncome }.sumOf { it.amount }
                     val totalIncome = monthExpenses.filter { it.isIncome }.sumOf { it.amount }
@@ -206,95 +230,162 @@ class MonthlyAnalyticsFragment : Fragment() {
                     val monthFormat = SimpleDateFormat("MMM", Locale.getDefault())
 
                     last6MonthsData.add(
-                        MonthData(
-                            month = monthFormat.format(monthStart),
-                            expense = totalExpense,
-                            income = totalIncome
-                        )
+                            MonthData(
+                                    month = monthFormat.format(monthStart),
+                                    expense = totalExpense,
+                                    income = totalIncome
+                            )
                     )
                 }
 
                 // Update RecyclerView
                 monthlyChartAdapter.updateData(last6MonthsData)
 
-                // Show Last 6 Months Total by default (currentMonthOffset == 0)
-                if (currentMonthOffset == 0) {
-                    // Calculate last 6 months totals
-                    val last6MonthsExpense = last6MonthsData.sumOf { it.expense }
-                    val last6MonthsIncome = last6MonthsData.sumOf { it.income }
-                    val last6MonthsNet = last6MonthsIncome - last6MonthsExpense
+                // Always show current month details by default - removed 6-month summary view
+                // Calculate specific month totals for the target date
+                calendar.time = targetDate
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val monthStart = calendar.time
 
-                    tvTotalExpenses.text = "₹${String.format("%.2f", last6MonthsExpense)}"
-                    tvTotalIncome.text = "₹${String.format("%.2f", last6MonthsIncome)}"
-                    
-                    // Format net balance with proper sign and color indication
-                    if (last6MonthsNet >= 0) {
-                        tvNetBalance.text = "₹${String.format("%.2f", last6MonthsNet)}"
-                        tvNetBalance.setTextColor(requireContext().getColor(android.R.color.holo_green_light))
-                    } else {
-                        tvNetBalance.text = "-₹${String.format("%.2f", Math.abs(last6MonthsNet))}"
-                        tvNetBalance.setTextColor(requireContext().getColor(android.R.color.holo_red_light))
-                    }
-                    
-                    tvSelectedMonth.text = "Last 6 Months Total"
+                calendar.set(
+                        Calendar.DAY_OF_MONTH,
+                        calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                )
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                val monthEnd = calendar.time
 
-                    println("Last 6 months - Income: $last6MonthsIncome, Expense: $last6MonthsExpense, Net: $last6MonthsNet")
+                val monthlyExpenses =
+                        allExpenses.filter { expense ->
+                            expense.date.time >= monthStart.time &&
+                                    expense.date.time <= monthEnd.time
+                        }
+
+                println("Target month expenses count: ${monthlyExpenses.size}")
+
+                val totalExpense = monthlyExpenses.filter { !it.isIncome }.sumOf { it.amount }
+                val totalIncome = monthlyExpenses.filter { it.isIncome }.sumOf { it.amount }
+                val netBalance = totalIncome - totalExpense
+
+                // Get budget information for this month
+                val budgetCalendar = Calendar.getInstance()
+                budgetCalendar.time = targetDate
+                val targetMonth = budgetCalendar.get(Calendar.MONTH) + 1 // 1-based
+                val targetYear = budgetCalendar.get(Calendar.YEAR)
+                val budget = budgetRepository.getBudgetForMonth(targetMonth, targetYear)
+
+                tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
+                
+                // Display budget amount in the income field instead of actual income
+                if (budget != null) {
+                    tvTotalIncome.text = "₹${String.format("%.2f", budget.amount)}"
                 } else {
-                    // Calculate specific month totals
-                    calendar.time = targetDate
-                    calendar.set(Calendar.DAY_OF_MONTH, 1)
-                    calendar.set(Calendar.HOUR_OF_DAY, 0)
-                    calendar.set(Calendar.MINUTE, 0)
-                    calendar.set(Calendar.SECOND, 0)
-                    calendar.set(Calendar.MILLISECOND, 0)
-                    val monthStart = calendar.time
+                    tvTotalIncome.text = "₹0.00" // No budget set
+                }
 
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
-                    calendar.set(Calendar.HOUR_OF_DAY, 23)
-                    calendar.set(Calendar.MINUTE, 59)
-                    calendar.set(Calendar.SECOND, 59)
-                    calendar.set(Calendar.MILLISECOND, 999)
-                    val monthEnd = calendar.time
+                // Update budget information with detailed remaining calculation
+                if (budget != null) {
+                    val remaining = budget.amount - totalExpense
+                    val percentageUsed =
+                            if (budget.amount > 0) (totalExpense / budget.amount * 100).toInt()
+                            else 0
 
-                    val monthlyExpenses = allExpenses.filter { expense ->
-                        expense.date.time >= monthStart.time && expense.date.time <= monthEnd.time
+                    when {
+                        remaining > 0 -> {
+                            tvBudgetInfo.text =
+                                    "Budget: ₹${String.format("%.2f", budget.amount)}\n" +
+                                            "Remaining: ₹${String.format("%.2f", remaining)}\n" +
+                                            "Used: $percentageUsed%"
+                            tvBudgetInfo.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_green_light)
+                            )
+                        }
+                        remaining == 0.0 -> {
+                            tvBudgetInfo.text =
+                                    "Budget: ₹${String.format("%.2f", budget.amount)}\n" +
+                                            "Budget exactly met!\n" +
+                                            "Used: 100%"
+                            tvBudgetInfo.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_orange_light)
+                            )
+                        }
+                        else -> {
+                            tvBudgetInfo.text =
+                                    "Budget: ₹${String.format("%.2f", budget.amount)}\n" +
+                                            "Over budget by: ₹${String.format("%.2f", -remaining)}\n" +
+                                            "Used: $percentageUsed%"
+                            tvBudgetInfo.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_red_light)
+                            )
+                        }
                     }
 
-                    println("Target month expenses count: ${monthlyExpenses.size}")
+                    // Show remaining budget balance instead of net balance
+                    when {
+                        remaining > 0 -> {
+                            tvNetBalance.text = "₹${String.format("%.2f", remaining)}"
+                            tvNetBalance.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_green_light)
+                            )
+                        }
+                        remaining == 0.0 -> {
+                            tvNetBalance.text = "₹0.00"
+                            tvNetBalance.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_orange_light)
+                            )
+                        }
+                        else -> {
+                            tvNetBalance.text = "-₹${String.format("%.2f", Math.abs(remaining))}"
+                            tvNetBalance.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_red_light)
+                            )
+                        }
+                    }
+                } else {
+                    tvBudgetInfo.text =
+                            "No budget set for this month\nSet budget via chat: \"My budget is ₹5000\""
+                    tvBudgetInfo.setTextColor(
+                            requireContext().getColor(android.R.color.darker_gray)
+                    )
 
-                    val totalExpense = monthlyExpenses.filter { !it.isIncome }.sumOf { it.amount }
-                    val totalIncome = monthlyExpenses.filter { it.isIncome }.sumOf { it.amount }
-                    val netBalance = totalIncome - totalExpense
-
-                    tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
-                    tvTotalIncome.text = "₹${String.format("%.2f", totalIncome)}"
-                    
-                    // Format net balance with proper sign and color indication
+                    // Show net balance when no budget is set
                     if (netBalance >= 0) {
                         tvNetBalance.text = "₹${String.format("%.2f", netBalance)}"
-                        tvNetBalance.setTextColor(requireContext().getColor(android.R.color.holo_green_light))
+                        tvNetBalance.setTextColor(
+                                requireContext().getColor(android.R.color.holo_green_light)
+                        )
                     } else {
                         tvNetBalance.text = "-₹${String.format("%.2f", Math.abs(netBalance))}"
-                        tvNetBalance.setTextColor(requireContext().getColor(android.R.color.holo_red_light))
+                        tvNetBalance.setTextColor(
+                                requireContext().getColor(android.R.color.holo_red_light)
+                        )
                     }
-
-                    val displayFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-                    val todayCalendar = Calendar.getInstance()
-                    todayCalendar.time = Date()
-                    
-                    val monthText = when (currentMonthOffset) {
-                        0 -> "This Month: ${displayFormat.format(targetDate)}"
-                        -1 -> "Last Month: ${displayFormat.format(targetDate)}"
-                        else -> displayFormat.format(targetDate)
-                    }
-                    tvSelectedMonth.text = monthText
-
-                    println("Specific month - Income: $totalIncome, Expense: $totalExpense, Net: $netBalance")
                 }
-                
+
+                val displayFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+                val todayCalendar = Calendar.getInstance()
+                todayCalendar.time = Date()
+
+                val monthText =
+                        when (currentMonthOffset) {
+                            0 -> "This Month: ${displayFormat.format(targetDate)}"
+                            -1 -> "Last Month: ${displayFormat.format(targetDate)}"
+                            else -> displayFormat.format(targetDate)
+                        }
+                tvSelectedMonth.text = monthText
+
+                println(
+                        "Specific month - Income: $totalIncome, Expense: $totalExpense, Net: $netBalance"
+                )
+
                 // Update navigation buttons after loading data
                 updateNavigationButtons()
-                
             } catch (e: Exception) {
                 println("Error loading monthly data: ${e.message}")
                 e.printStackTrace()
@@ -304,6 +395,12 @@ class MonthlyAnalyticsFragment : Fragment() {
                 tvSelectedMonth.text = "Error: ${e.message}"
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh data when fragment becomes visible to show updated budget info
+        loadMonthlyData()
     }
 
     fun refreshData() {

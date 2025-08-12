@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.expensetracker.ai.data.model.*
+import com.expensetracker.ai.data.repository.BudgetRepository
 import com.expensetracker.ai.data.repository.ChatMessageRepository
 import com.expensetracker.ai.data.repository.ExpenseRepository
 import com.expensetracker.ai.network.RetrofitClient
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 @OptIn(kotlin.ExperimentalStdlibApi::class)
 class ChatViewModel(
         private val chatMessageRepository: ChatMessageRepository,
-        private val expenseRepository: ExpenseRepository
+        private val expenseRepository: ExpenseRepository,
+        private val budgetRepository: BudgetRepository
 ) : ViewModel() {
 
         private val _chatMessages = MutableLiveData<List<ChatMessage>>()
@@ -160,6 +162,53 @@ How can I help you today?"""
                                         userMessage.lowercase().contains("this week"))
                 ) {
                         searchTransactionsByDate(userMessage)
+                        return
+                }
+
+                // Check if user wants to set budget - more specific detection to avoid conflicts
+                val budgetKeywords =
+                        listOf(
+                                "budget",
+                                "limit",
+                                "allocate",
+                                "plan"
+                        ) // Removed "spend" to avoid conflicts
+                val setBudgetKeywords =
+                        listOf(
+                                "set budget",
+                                "my budget",
+                                "budget is",
+                                "budget of",
+                                "monthly budget"
+                        )
+                val monthKeywords = listOf("month", "monthly")
+                val numberPattern = ".*\\d+.*".toRegex()
+                val currencySymbols = listOf("₹", "rs", "rupees", "inr")
+
+                val containsBudgetKeyword =
+                        budgetKeywords.any { userMessage.lowercase().contains(it) }
+                val containsSetBudgetKeyword =
+                        setBudgetKeywords.any { userMessage.lowercase().contains(it) }
+                val containsMonthKeyword =
+                        monthKeywords.any { userMessage.lowercase().contains(it) }
+                val containsNumber = userMessage.matches(numberPattern)
+                val containsCurrency = currencySymbols.any { userMessage.lowercase().contains(it) }
+
+                android.util.Log.d("ChatViewModel", "Budget detection - Message: '$userMessage'")
+                android.util.Log.d(
+                        "ChatViewModel",
+                        "Budget keyword: $containsBudgetKeyword, Set budget: $containsSetBudgetKeyword, Month: $containsMonthKeyword, Number: $containsNumber, Currency: $containsCurrency"
+                )
+
+                // More specific budget detection to avoid capturing regular transactions
+                if (containsSetBudgetKeyword ||
+                                (containsBudgetKeyword && containsMonthKeyword && containsNumber) ||
+                                (userMessage.lowercase().contains("budget") &&
+                                        containsNumber &&
+                                        containsCurrency)
+                ) {
+                        android.util.Log.d("ChatViewModel", "🎯 Budget command detected!")
+                        handleBudgetCommand(userMessage)
                         return
                 }
 
@@ -1423,14 +1472,407 @@ $transactionItems$limitText
         """.trimIndent()
         }
 
+        private fun handleBudgetCommand(userMessage: String) {
+                addMessage(
+                        ChatMessage.create(
+                                userMessage,
+                                true,
+                                messageType = MessageType.USER_MESSAGE
+                        )
+                )
+
+                viewModelScope.launch {
+                        val response = processBudgetMessage(userMessage)
+                        addMessage(
+                                ChatMessage.create(
+                                        message = response,
+                                        isUser = false,
+                                        messageType = MessageType.AI_RESPONSE
+                                )
+                        )
+                }
+        }
+
+        private suspend fun processBudgetMessage(message: String): String {
+                _isLoading.value = true
+                return try {
+                        android.util.Log.d(
+                                "ChatViewModel",
+                                "🔄 Processing budget message: '$message'"
+                        )
+
+                        // First try direct pattern matching for common formats
+                        val directResult = tryDirectPatternMatching(message)
+                        if (directResult != null) {
+                                android.util.Log.d(
+                                        "ChatViewModel",
+                                        "✅ Direct pattern match successful!"
+                                )
+                                setBudgetAndReturnMessage(directResult)
+                        } else {
+                                // Use Gemini API to parse budget information
+                                val budgetInfo = parseBudgetWithGemini(message)
+                                if (budgetInfo != null) {
+                                        setBudgetAndReturnMessage(budgetInfo)
+                                } else {
+                                        getFailureMessage()
+                                }
+                        }
+                } catch (e: Exception) {
+                        android.util.Log.e(
+                                "ChatViewModel",
+                                "Error processing budget: ${e.message}",
+                                e
+                        )
+                        "❌ Sorry, I encountered an error while setting your budget. Please try again."
+                } finally {
+                        _isLoading.value = false
+                }
+        }
+
+        private fun tryDirectPatternMatching(message: String): BudgetInfo? {
+                return try {
+                        val lowerMessage = message.lowercase()
+
+                        // Pattern 1: "set monthly budget of 1000rs" or similar
+                        val pattern1 =
+                                "(set|my)\\s+(?:monthly\\s+)?budget\\s+(?:of\\s+|is\\s+)?([0-9]+)(?:rs|₹|rupees)?".toRegex()
+                        val match1 = pattern1.find(lowerMessage)
+                        if (match1 != null) {
+                                val amount = match1.groupValues[2].toDoubleOrNull()
+                                if (amount != null && amount > 0) {
+                                        val calendar = java.util.Calendar.getInstance()
+                                        return BudgetInfo(
+                                                amount,
+                                                calendar.get(java.util.Calendar.MONTH) + 1,
+                                                calendar.get(java.util.Calendar.YEAR),
+                                                "Monthly budget"
+                                        )
+                                }
+                        }
+
+                        // Pattern 2: "1000rs monthly budget" or "monthly budget 1000"
+                        val pattern2 =
+                                "(?:([0-9]+)(?:rs|₹|rupees)?\\s+)?(?:monthly\\s+)?budget(?:\\s+([0-9]+)(?:rs|₹|rupees)?)?".toRegex()
+                        val match2 = pattern2.find(lowerMessage)
+                        if (match2 != null) {
+                                val amount =
+                                        (match2.groupValues[1].toDoubleOrNull()
+                                                ?: match2.groupValues[2].toDoubleOrNull())
+                                if (amount != null && amount > 0) {
+                                        val calendar = java.util.Calendar.getInstance()
+                                        return BudgetInfo(
+                                                amount,
+                                                calendar.get(java.util.Calendar.MONTH) + 1,
+                                                calendar.get(java.util.Calendar.YEAR),
+                                                "Monthly budget"
+                                        )
+                                }
+                        }
+
+                        null
+                } catch (e: Exception) {
+                        android.util.Log.e(
+                                "ChatViewModel",
+                                "Direct pattern matching failed: ${e.message}"
+                        )
+                        null
+                }
+        }
+
+        private suspend fun setBudgetAndReturnMessage(budgetInfo: BudgetInfo): String {
+                // Set the budget
+                budgetRepository.setBudgetForMonth(
+                        budgetInfo.amount,
+                        budgetInfo.month,
+                        budgetInfo.year,
+                        budgetInfo.description
+                )
+
+                val monthName =
+                        java.text.SimpleDateFormat("MMMM", java.util.Locale.getDefault())
+                                .format(
+                                        java.util.Calendar.getInstance()
+                                                .apply {
+                                                        set(
+                                                                java.util.Calendar.MONTH,
+                                                                budgetInfo.month - 1
+                                                        )
+                                                }
+                                                .time
+                                )
+
+                return "✅ **Budget Set Successfully!**\n\n" +
+                        "💰 **Amount:** ₹${String.format("%.2f", budgetInfo.amount)}\n" +
+                        "📅 **Month:** $monthName ${budgetInfo.year}\n" +
+                        "${if (budgetInfo.description != null) "📝 **Note:** ${budgetInfo.description}\n" else ""}" +
+                        "\n🎯 **Your budget is now active!** Check Monthly/Daily Analytics to track your progress.\n\n" +
+                        "💡 **Tip:** I can understand budget commands in many ways:\n" +
+                        "• \"My budget is ₹3000\"\n" +
+                        "• \"Set this month budget of 1000\"\n" +
+                        "• \"I plan to spend 5000 this month\"\n" +
+                        "• \"Monthly limit is 2500\""
+        }
+
+        private fun getFailureMessage(): String {
+                return "❌ I couldn't understand your budget request. I can help you set budgets in many natural ways!\n\n" +
+                        "✨ **Try saying it naturally:**\n" +
+                        "• \"Set this month budget of 1000\"\n" +
+                        "• \"My budget is ₹5000\"\n" +
+                        "• \"I want to spend 3000 this month\"\n" +
+                        "• \"Monthly limit is 2500\"\n" +
+                        "• \"Plan to spend 1500\"\n" +
+                        "• \"Allocate 4000 for this month\"\n\n" +
+                        "💬 Just mention a number and words like 'budget', 'spend', 'month', or 'limit' - I'll understand!"
+        }
+
+        private suspend fun parseBudgetWithGemini(message: String): BudgetInfo? {
+                return try {
+                        val currentDate = java.util.Date()
+                        val currentMonth =
+                                java.text.SimpleDateFormat("MMMM", java.util.Locale.getDefault())
+                                        .format(currentDate)
+                        val currentYear =
+                                java.text.SimpleDateFormat("yyyy", java.util.Locale.getDefault())
+                                        .format(currentDate)
+                        val currentMonthNum =
+                                java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1
+
+                        val prompt =
+                                """
+                        I need to extract budget information from user messages. The user might express budget setting in many different ways.
+                        
+                        User message: "$message"
+                        Current date: $currentMonth $currentYear (Month number: $currentMonthNum)
+                        
+                        Please analyze if this message contains budget-setting intent and extract the information.
+                        
+                        Examples of what users might say:
+                        - "set this month budget of 1000"
+                        - "Set monthly budget of 1000rs"
+                        - "my budget is 5000"
+                        - "I want to spend 3000 this month"
+                        - "monthly limit is 2500"
+                        - "allocate 4000 for this month"
+                        - "plan to spend 1500"
+                        - "budget 2000 for January"
+                        - "set 800 as my monthly budget"
+                        - "I can spend 6000 this month"
+                        - "monthly allocation is 3500"
+                        - "expense limit 4500"
+                        - "this month I want to spend maximum 2000"
+                        - "1000rs monthly budget"
+                        - "budget this month 5000"
+                        
+                        Extract budget information and return ONLY a JSON object:
+                        {
+                            "amount": [numeric value without currency symbols like ₹, rs, rupees, INR],
+                            "month": [1-12 where 1=January, 12=December],
+                            "year": [4-digit year],
+                            "description": [brief description like "Monthly budget" or null]
+                        }
+                        
+                        Rules:
+                        1. Extract ANY numeric value that could be a budget amount (remove ₹, Rs, INR, commas, etc.)
+                        2. For month: 
+                           - If "this month" or no month specified → use current month ($currentMonthNum)
+                           - If specific month name → convert to number (January=1, February=2, etc.)
+                           - If "next month" → current month + 1
+                           - If "last month" → current month - 1
+                        3. For year:
+                           - If not specified → use current year ($currentYear)
+                           - If specified → use that year
+                        4. Look for budget-related keywords: budget, spend, limit, allocate, plan, monthly, month
+                        5. If no clear budget intent OR no amount found → return: null
+                        
+                        Return only the JSON object or null, nothing else.
+                        """.trimIndent()
+
+                        val request =
+                                GeminiRequest(
+                                        contents = listOf(Content(parts = listOf(Part(prompt))))
+                                )
+                        val response =
+                                RetrofitClient.geminiApiService.generateContent(
+                                        apiKey = Constants.GEMINI_API_KEY,
+                                        request = request
+                                )
+
+                        val responseText =
+                                if (response.isSuccessful && response.body() != null) {
+                                        response.body()!!
+                                                .candidates
+                                                .firstOrNull()
+                                                ?.content
+                                                ?.parts
+                                                ?.firstOrNull()
+                                                ?.text
+                                } else {
+                                        null
+                                }
+                        android.util.Log.d("ChatViewModel", "Gemini budget response: $responseText")
+
+                        if (responseText?.trim() == "null") {
+                                return null
+                        }
+
+                        responseText?.let { jsonStr ->
+                                try {
+                                        // Clean the JSON response - handle various formats
+                                        var cleanJson =
+                                                jsonStr.trim()
+                                                        .removePrefix("```json")
+                                                        .removePrefix("```")
+                                                        .removeSuffix("```")
+                                                        .trim()
+
+                                        // Handle case where response might have extra text
+                                        val jsonStart = cleanJson.indexOf("{")
+                                        val jsonEnd = cleanJson.lastIndexOf("}") + 1
+                                        if (jsonStart >= 0 && jsonEnd > jsonStart) {
+                                                cleanJson = cleanJson.substring(jsonStart, jsonEnd)
+                                        }
+
+                                        android.util.Log.d(
+                                                "ChatViewModel",
+                                                "Cleaned JSON: $cleanJson"
+                                        )
+
+                                        // Enhanced regex patterns to handle more variations
+                                        val amountRegex =
+                                                "\"amount\"\\s*:\\s*([0-9]+\\.?[0-9]*)".toRegex()
+                                        val monthRegex = "\"month\"\\s*:\\s*([0-9]+)".toRegex()
+                                        val yearRegex = "\"year\"\\s*:\\s*([0-9]+)".toRegex()
+                                        val descRegex =
+                                                "\"description\"\\s*:\\s*(?:\"([^\"]*)\"|null)".toRegex()
+
+                                        val amount =
+                                                amountRegex
+                                                        .find(cleanJson)
+                                                        ?.groupValues
+                                                        ?.get(1)
+                                                        ?.toDoubleOrNull()
+                                        val month =
+                                                monthRegex
+                                                        .find(cleanJson)
+                                                        ?.groupValues
+                                                        ?.get(1)
+                                                        ?.toIntOrNull()
+                                        val year =
+                                                yearRegex
+                                                        .find(cleanJson)
+                                                        ?.groupValues
+                                                        ?.get(1)
+                                                        ?.toIntOrNull()
+                                        val description =
+                                                descRegex.find(cleanJson)?.groupValues?.get(1)
+
+                                        android.util.Log.d(
+                                                "ChatViewModel",
+                                                "Parsed - Amount: $amount, Month: $month, Year: $year, Desc: $description"
+                                        )
+
+                                        if (amount != null &&
+                                                        month != null &&
+                                                        year != null &&
+                                                        month in 1..12 &&
+                                                        amount > 0
+                                        ) {
+                                                BudgetInfo(amount, month, year, description)
+                                        } else {
+                                                // Try fallback parsing if structured parsing fails
+                                                tryFallbackParsing(jsonStr)
+                                        }
+                                } catch (e: Exception) {
+                                        android.util.Log.e(
+                                                "ChatViewModel",
+                                                "Error parsing budget JSON: ${e.message}"
+                                        )
+                                        // Try fallback parsing
+                                        tryFallbackParsing(jsonStr)
+                                }
+                        }
+                } catch (e: Exception) {
+                        android.util.Log.e(
+                                "ChatViewModel",
+                                "Error calling Gemini for budget parsing: ${e.message}",
+                                e
+                        )
+                        null
+                }
+        }
+
+        private fun tryFallbackParsing(text: String): BudgetInfo? {
+                return try {
+                        android.util.Log.d(
+                                "ChatViewModel",
+                                "Attempting fallback parsing for: $text"
+                        )
+
+                        // Enhanced number extraction that handles currency formats
+                        val numberRegex =
+                                "([0-9]+(?:\\.[0-9]+)?)(?:\\s*(?:rs|₹|rupees|inr)?)?".toRegex(
+                                        RegexOption.IGNORE_CASE
+                                )
+                        val numbers =
+                                numberRegex
+                                        .findAll(text)
+                                        .map { it.groupValues[1].toDoubleOrNull() }
+                                        .filterNotNull()
+
+                        // Use the largest reasonable number as budget amount (more flexible range)
+                        val amount = numbers.filter { it >= 50 && it <= 10000000 }.maxOrNull()
+
+                        android.util.Log.d(
+                                "ChatViewModel",
+                                "Fallback found numbers: $numbers, selected amount: $amount"
+                        )
+
+                        if (amount != null) {
+                                // Use current month and year as defaults
+                                val calendar = java.util.Calendar.getInstance()
+                                val currentMonth = calendar.get(java.util.Calendar.MONTH) + 1
+                                val currentYear = calendar.get(java.util.Calendar.YEAR)
+
+                                android.util.Log.d(
+                                        "ChatViewModel",
+                                        "Fallback parsed - Amount: $amount, Month: $currentMonth, Year: $currentYear"
+                                )
+                                BudgetInfo(amount, currentMonth, currentYear, "Monthly budget")
+                        } else {
+                                android.util.Log.d(
+                                        "ChatViewModel",
+                                        "Fallback parsing failed - no valid amount found"
+                                )
+                                null
+                        }
+                } catch (e: Exception) {
+                        android.util.Log.e("ChatViewModel", "Fallback parsing failed: ${e.message}")
+                        null
+                }
+        }
+
+        private data class BudgetInfo(
+                val amount: Double,
+                val month: Int,
+                val year: Int,
+                val description: String?
+        )
+
         class Factory(
                 private val chatMessageRepository: ChatMessageRepository,
-                private val expenseRepository: ExpenseRepository
+                private val expenseRepository: ExpenseRepository,
+                private val budgetRepository: BudgetRepository
         ) : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
                                 @Suppress("UNCHECKED_CAST")
-                                return ChatViewModel(chatMessageRepository, expenseRepository) as T
+                                return ChatViewModel(
+                                        chatMessageRepository,
+                                        expenseRepository,
+                                        budgetRepository
+                                ) as
+                                        T
                         }
                         throw IllegalArgumentException("Unknown ViewModel class")
                 }

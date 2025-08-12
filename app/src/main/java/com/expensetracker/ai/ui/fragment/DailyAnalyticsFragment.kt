@@ -186,6 +186,7 @@ class DailyAnalyticsFragment : Fragment() {
     private fun loadDailyDataForDate(targetDate: Date) {
         lifecycleScope.launch {
             try {
+                // Get fresh data each time
                 val allExpenses = repository.getAllExpenses().first()
                 val calendar = Calendar.getInstance()
 
@@ -289,6 +290,12 @@ class DailyAnalyticsFragment : Fragment() {
                 tvSelectedDate.text = "Error: ${e.message}"
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh data when fragment becomes visible to show updated budget info
+        loadDailyData()
     }
 
     fun refreshData() {

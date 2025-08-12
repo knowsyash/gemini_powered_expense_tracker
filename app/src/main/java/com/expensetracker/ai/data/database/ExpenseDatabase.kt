@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.expensetracker.ai.data.dao.BudgetDao
+import com.expensetracker.ai.data.model.Budget
 import com.expensetracker.ai.data.model.ChatMessage
 import com.expensetracker.ai.data.model.Expense
 import com.expensetracker.ai.data.model.FinancialInsight
@@ -14,8 +16,13 @@ import com.expensetracker.ai.data.model.SavingsGoal
 
 @Database(
         entities =
-                [Expense::class, SavingsGoal::class, FinancialInsight::class, ChatMessage::class],
-        version = 5,
+                [
+                        Expense::class,
+                        SavingsGoal::class,
+                        FinancialInsight::class,
+                        ChatMessage::class,
+                        Budget::class],
+        version = 6,
         exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -25,6 +32,7 @@ abstract class ExpenseDatabase : RoomDatabase() {
     abstract fun savingsGoalDao(): SavingsGoalDao
     abstract fun financialInsightDao(): FinancialInsightDao
     abstract fun chatMessageDao(): ChatMessageDao
+    abstract fun budgetDao(): BudgetDao
 
     companion object {
         @Volatile private var INSTANCE: ExpenseDatabase? = null
@@ -119,6 +127,25 @@ abstract class ExpenseDatabase : RoomDatabase() {
                     }
                 }
 
+        private val MIGRATION_5_6 =
+                object : Migration(5, 6) {
+                    override fun migrate(database: SupportSQLiteDatabase) {
+                        // Create budgets table
+                        database.execSQL(
+                                """
+                    CREATE TABLE IF NOT EXISTS `budgets` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `amount` REAL NOT NULL,
+                        `month` INTEGER NOT NULL,
+                        `year` INTEGER NOT NULL,
+                        `createdDate` INTEGER NOT NULL,
+                        `description` TEXT
+                    )
+                """
+                        )
+                    }
+                }
+
         fun getDatabase(context: Context): ExpenseDatabase {
             return INSTANCE
                     ?: synchronized(this) {
@@ -132,7 +159,8 @@ abstract class ExpenseDatabase : RoomDatabase() {
                                                 MIGRATION_1_2,
                                                 MIGRATION_2_3,
                                                 MIGRATION_3_4,
-                                                MIGRATION_4_5
+                                                MIGRATION_4_5,
+                                                MIGRATION_5_6
                                         )
                                         .build()
                         INSTANCE = instance
