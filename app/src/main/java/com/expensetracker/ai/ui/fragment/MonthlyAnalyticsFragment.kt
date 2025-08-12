@@ -284,7 +284,7 @@ class MonthlyAnalyticsFragment : Fragment() {
 
                 tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
                 tvTotalIncome.text = "₹${String.format("%.2f", totalIncome)}"
-                
+
                 // Display budget amount in the budget field
                 if (budget != null) {
                     tvTotalBudget.text = "₹${String.format("%.2f", budget.amount)}"
