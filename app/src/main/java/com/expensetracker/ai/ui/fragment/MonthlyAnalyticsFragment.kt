@@ -283,11 +283,34 @@ class MonthlyAnalyticsFragment : Fragment() {
                 tvTotalExpenses.text = "₹${String.format("%.2f", totalExpense)}"
                 tvTotalIncome.text = "₹${String.format("%.2f", totalIncome)}"
 
-                // Display budget amount in the budget field
+                // Display remaining budget (budget - expenses) in the budget field
                 if (budget != null) {
-                    tvTotalBudget.text = "₹${String.format("%.2f", budget.amount)}"
+                    val remainingBudget = budget.amount - totalExpense
+                    tvTotalBudget.text = "₹${String.format("%.2f", remainingBudget)}"
+
+                    // Color code the remaining budget
+                    when {
+                        remainingBudget > 0 -> {
+                            tvTotalBudget.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_green_light)
+                            )
+                        }
+                        remainingBudget == 0.0 -> {
+                            tvTotalBudget.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_orange_light)
+                            )
+                        }
+                        else -> {
+                            tvTotalBudget.setTextColor(
+                                    requireContext().getColor(android.R.color.holo_red_light)
+                            )
+                        }
+                    }
                 } else {
                     tvTotalBudget.text = "₹0.00" // No budget set
+                    tvTotalBudget.setTextColor(
+                            requireContext().getColor(android.R.color.darker_gray)
+                    )
                 }
 
                 // Show simple net balance (income - expenses)

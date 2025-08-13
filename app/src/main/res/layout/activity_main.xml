@@ -200,35 +200,6 @@
                         android:orientation="horizontal"
                         android:baselineAligned="false">
 
-                        <!-- Manual Button -->
-                        <LinearLayout
-                            android:id="@+id/fabAddExpense"
-                            android:layout_width="0dp"
-                            android:layout_height="@dimen/button_height_large"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@drawable/gradient_button"
-                            android:layout_marginEnd="@dimen/spacing_small"
-                            android:clickable="true"
-                            android:focusable="true">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_add"
-                                android:layout_marginBottom="4dp"
-                                app:tint="@color/text_primary" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Manual"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp" />
-
-                        </LinearLayout>
-
                         <!-- Track Button -->
                         <LinearLayout
                             android:id="@+id/btnAnalytics"
@@ -238,7 +209,7 @@
                             android:orientation="vertical"
                             android:gravity="center"
                             android:background="@drawable/modern_card_background"
-                            android:layout_marginHorizontal="@dimen/spacing_xs"
+                            android:layout_marginEnd="@dimen/spacing_small"
                             android:clickable="true"
                             android:focusable="true">
 

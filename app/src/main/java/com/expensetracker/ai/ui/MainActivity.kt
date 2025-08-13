@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvExpenses: TextView
     private lateinit var recyclerViewExpenses: RecyclerView
     private lateinit var tvNoExpenses: View
-    private lateinit var fabAddExpense: LinearLayout
     private lateinit var analyticsButton: LinearLayout
     private lateinit var fabChat: LinearLayout
     private lateinit var tvViewAll: TextView
@@ -59,7 +58,6 @@ class MainActivity : AppCompatActivity() {
         tvExpenses = findViewById(R.id.tvExpenses)
         recyclerViewExpenses = findViewById(R.id.recyclerViewExpenses)
         tvNoExpenses = findViewById(R.id.tvNoExpenses)
-        fabAddExpense = findViewById(R.id.fabAddExpense)
         analyticsButton = findViewById(R.id.btnAnalytics)
         fabChat = findViewById(R.id.fabChat)
         tvViewAll = findViewById(R.id.tvViewAll)
@@ -86,8 +84,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupObservers() {
         lifecycleScope.launch {
             expenseViewModel.allExpenses.collect { expenses ->
-                // Show only the 5 most recent transactions on main screen
-                val recentExpenses = expenses.take(5)
+                // Show only the 3 most recent transactions on main screen
+                val recentExpenses = expenses.take(3)
                 expenseAdapter.submitList(recentExpenses)
                 tvNoExpenses.visibility =
                         if (expenses.isEmpty()) {
@@ -112,10 +110,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        fabAddExpense.setOnClickListener {
-            startActivity(Intent(this, AddExpenseActivity::class.java))
-        }
-
         analyticsButton.setOnClickListener {
             startActivity(Intent(this, AnalyticsActivity::class.java))
         }
