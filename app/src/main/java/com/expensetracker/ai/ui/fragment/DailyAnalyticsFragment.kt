@@ -13,7 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.expensetracker.ai.ExpenseTrackerApplication
 import com.expensetracker.ai.R
+import com.expensetracker.ai.data.model.CategoryStructure
+import com.expensetracker.ai.data.model.Expense
 import com.expensetracker.ai.data.repository.ExpenseRepository
+import com.expensetracker.ai.ui.adapter.CategoryExpenseAdapter
+import com.expensetracker.ai.ui.adapter.CategorySummaryItem
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.coroutines.flow.first
@@ -91,6 +95,8 @@ class DailyAnalyticsFragment : Fragment() {
     private lateinit var dailyChartAdapter: DailyChartAdapter
     private lateinit var btnPreviousDay: ImageButton
     private lateinit var btnNextDay: ImageButton
+    private lateinit var recyclerViewCategoryBreakdown: RecyclerView
+    private lateinit var categoryExpenseAdapter: CategoryExpenseAdapter
 
     private var currentDateOffset = 0
     private var selectedDate = Date()
@@ -128,12 +134,20 @@ class DailyAnalyticsFragment : Fragment() {
         recyclerViewDailyChart = view.findViewById(R.id.recyclerViewDailyChart)
         btnPreviousDay = view.findViewById(R.id.btnPreviousDay)
         btnNextDay = view.findViewById(R.id.btnNextDay)
+        recyclerViewCategoryBreakdown = view.findViewById(R.id.recyclerViewCategoryBreakdown)
 
         // Setup RecyclerView
         dailyChartAdapter = DailyChartAdapter()
         recyclerViewDailyChart.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = dailyChartAdapter
+        }
+
+        // Setup Category RecyclerView
+        categoryExpenseAdapter = CategoryExpenseAdapter()
+        recyclerViewCategoryBreakdown.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = categoryExpenseAdapter
         }
 
         // Setup navigation buttons
@@ -278,6 +292,9 @@ class DailyAnalyticsFragment : Fragment() {
                         }
                 tvSelectedDate.text = dateText
 
+                // Process category breakdown for selected date expenses
+                processCategoryBreakdown(selectedDateExpenses.filter { !it.isIncome })
+
                 println(
                         "Selected date - Income: $totalIncome, Expense: $totalExpense, Net: $netBalance"
                 )
@@ -290,6 +307,37 @@ class DailyAnalyticsFragment : Fragment() {
                 tvSelectedDate.text = "Error: ${e.message}"
             }
         }
+    }
+
+    private fun processCategoryBreakdown(expenses: List<Expense>) {
+        val categoryBreakdown =
+                expenses
+                        .groupBy { expense ->
+                            CategoryStructure.getMainCategoryForSubcategory(expense.category)
+                        }
+                        .map { (category, expenseList) ->
+                            val totalAmount = expenseList.sumOf { it.amount }
+                            val transactionCount = expenseList.size
+
+                            // Find the most frequent subcategory and its amount
+                            val subcategoryGroups = expenseList.groupBy { it.category }
+                            val topSubcategoryEntry =
+                                    subcategoryGroups.maxByOrNull { it.value.size }
+                            val topSubcategory = topSubcategoryEntry?.key ?: "General"
+                            val topSubcategoryAmount =
+                                    topSubcategoryEntry?.value?.sumOf { it.amount } ?: 0.0
+
+                            CategorySummaryItem(
+                                    mainCategory = category,
+                                    totalAmount = totalAmount,
+                                    transactionCount = transactionCount,
+                                    topSubcategory = topSubcategory,
+                                    topSubcategoryAmount = topSubcategoryAmount
+                            )
+                        }
+                        .sortedByDescending { it.totalAmount }
+
+        categoryExpenseAdapter.updateData(categoryBreakdown)
     }
 
     override fun onResume() {

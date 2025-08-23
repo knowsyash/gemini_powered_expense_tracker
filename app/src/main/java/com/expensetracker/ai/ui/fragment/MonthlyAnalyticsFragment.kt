@@ -1,20 +1,32 @@
 package com.expensetracker.ai.ui.fragment
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.expensetracker.ai.ExpenseTrackerApplication
 import com.expensetracker.ai.R
+import com.expensetracker.ai.data.model.CategoryStructure
+import com.expensetracker.ai.data.model.Expense
 import com.expensetracker.ai.data.repository.BudgetRepository
 import com.expensetracker.ai.data.repository.ExpenseRepository
+import com.expensetracker.ai.ui.adapter.CategoryExpenseAdapter
+import com.expensetracker.ai.ui.adapter.CategorySummaryItem
+import com.expensetracker.ai.ui.adapter.LegendAdapter
+import com.expensetracker.ai.ui.adapter.SubcategoryBreakdownAdapter
+import com.expensetracker.ai.ui.adapter.SubcategoryItem
+import com.expensetracker.ai.ui.view.ChartData
+import com.expensetracker.ai.ui.view.PieChartView
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.coroutines.flow.first
@@ -92,10 +104,14 @@ class MonthlyAnalyticsFragment : Fragment() {
     private lateinit var tvNetBalance: TextView
     private lateinit var recyclerViewMonthlyChart: RecyclerView
     private lateinit var monthlyChartAdapter: MonthlyChartAdapter
+    private lateinit var recyclerViewCategoryBreakdown: RecyclerView
+    private lateinit var categoryExpenseAdapter: CategoryExpenseAdapter
     private lateinit var btnPreviousMonth: ImageButton
     private lateinit var btnNextMonth: ImageButton
+    private lateinit var btnViewMoreCategories: com.google.android.material.button.MaterialButton
 
     private var currentMonthOffset = 0
+    private var currentMonthExpenses: List<Expense> = emptyList()
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -134,14 +150,23 @@ class MonthlyAnalyticsFragment : Fragment() {
         tvSelectedMonth = view.findViewById(R.id.tvSelectedMonth)
         tvNetBalance = view.findViewById(R.id.tvNetBalance)
         recyclerViewMonthlyChart = view.findViewById(R.id.recyclerViewMonthlyChart)
+        recyclerViewCategoryBreakdown = view.findViewById(R.id.recyclerViewCategoryBreakdown)
         btnPreviousMonth = view.findViewById(R.id.btnPreviousMonth)
         btnNextMonth = view.findViewById(R.id.btnNextMonth)
+        btnViewMoreCategories = view.findViewById(R.id.btnViewMoreCategories)
 
         // Setup RecyclerView
         monthlyChartAdapter = MonthlyChartAdapter()
         recyclerViewMonthlyChart.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = monthlyChartAdapter
+        }
+
+        // Setup Category Breakdown RecyclerView
+        categoryExpenseAdapter = CategoryExpenseAdapter()
+        recyclerViewCategoryBreakdown.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = categoryExpenseAdapter
         }
 
         // Setup navigation buttons
@@ -163,6 +188,8 @@ class MonthlyAnalyticsFragment : Fragment() {
                 Toast.makeText(context, "Cannot view future months", Toast.LENGTH_SHORT).show()
             }
         }
+
+        btnViewMoreCategories.setOnClickListener { showCategoryGraphDialog() }
 
         // Initial button state update
         updateNavigationButtons()
@@ -267,11 +294,19 @@ class MonthlyAnalyticsFragment : Fragment() {
                                     expense.date.time <= monthEnd.time
                         }
 
+                // Store current month expenses for the dialog
+                currentMonthExpenses = monthlyExpenses
+
                 println("Target month expenses count: ${monthlyExpenses.size}")
 
                 val totalExpense = monthlyExpenses.filter { !it.isIncome }.sumOf { it.amount }
                 val totalIncome = monthlyExpenses.filter { it.isIncome }.sumOf { it.amount }
                 val netBalance = totalIncome - totalExpense
+
+                // Process category breakdown for expenses only
+                val expenseTransactions = monthlyExpenses.filter { !it.isIncome }
+                val categoryBreakdown = processCategoryBreakdown(expenseTransactions)
+                categoryExpenseAdapter.updateData(categoryBreakdown)
 
                 // Get budget information for this month
                 val budgetCalendar = Calendar.getInstance()
@@ -352,6 +387,286 @@ class MonthlyAnalyticsFragment : Fragment() {
                 tvNetBalance.text = "Error"
                 tvSelectedMonth.text = "Error: ${e.message}"
             }
+        }
+    }
+
+    private fun processCategoryBreakdown(
+            expenses: List<com.expensetracker.ai.data.model.Expense>
+    ): List<CategorySummaryItem> {
+        // Group expenses by main category
+        val mainCategoryGroups =
+                expenses.groupBy { expense ->
+                    CategoryStructure.getMainCategoryForSubcategory(expense.category)
+                }
+
+        val categorySummaries = mutableListOf<CategorySummaryItem>()
+
+        // Process each main category
+        for (mainCategory in CategoryStructure.MAIN_CATEGORIES) {
+            val categoryExpenses = mainCategoryGroups[mainCategory] ?: emptyList()
+
+            if (categoryExpenses.isNotEmpty()) {
+                val totalAmount = categoryExpenses.sumOf { it.amount }
+                val transactionCount = categoryExpenses.size
+
+                // Find the subcategory with highest spending
+                val subcategoryGroups = categoryExpenses.groupBy { it.category }
+                val topSubcategory =
+                        subcategoryGroups.maxByOrNull { (_, expenseList) ->
+                            expenseList.sumOf { it.amount }
+                        }
+
+                val topSubcategoryName = topSubcategory?.key ?: "None"
+                val topSubcategoryAmount = topSubcategory?.value?.sumOf { it.amount } ?: 0.0
+
+                categorySummaries.add(
+                        CategorySummaryItem(
+                                mainCategory = mainCategory,
+                                totalAmount = totalAmount,
+                                transactionCount = transactionCount,
+                                topSubcategory = topSubcategoryName,
+                                topSubcategoryAmount = topSubcategoryAmount
+                        )
+                )
+            }
+        }
+
+        // Sort by amount descending
+        return categorySummaries.sortedByDescending { it.totalAmount }
+    }
+
+    private fun showCategoryGraphDialog() {
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_category_graph)
+
+        // Set dialog properties
+        dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Initialize dialog views
+        val tvDialogTitle = dialog.findViewById<TextView>(R.id.tvDialogTitle)
+        val btnCloseDialog = dialog.findViewById<ImageButton>(R.id.btnCloseDialog)
+        val btnClose =
+                dialog.findViewById<com.google.android.material.button.MaterialButton>(
+                        R.id.btnClose
+                )
+        val chartContainer = dialog.findViewById<ViewGroup>(R.id.chartContainer)
+        val tvChartCenter = dialog.findViewById<TextView>(R.id.tvChartCenter)
+        val recyclerViewLegend = dialog.findViewById<RecyclerView>(R.id.recyclerViewLegend)
+
+        // Set title with current month
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.MONTH, currentMonthOffset)
+        val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+        tvDialogTitle.text = "Category Breakdown - ${monthFormat.format(calendar.time)}"
+
+        // Create chart data
+        val chartDataList =
+                createChartDataFromExpenses(currentMonthExpenses.filter { !it.isIncome })
+
+        if (chartDataList.isNotEmpty()) {
+            // Create and add pie chart
+            val pieChart = PieChartView(requireContext())
+            pieChart.setData(chartDataList)
+            chartContainer.removeAllViews()
+            chartContainer.addView(
+                    pieChart,
+                    ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+            )
+
+            // Set total amount in center
+            val totalAmount = chartDataList.sumOf { it.value }
+            tvChartCenter.text = "Total\n₹${String.format("%.2f", totalAmount)}"
+
+            // Setup legend RecyclerView
+            val legendAdapter = LegendAdapter()
+            recyclerViewLegend.apply {
+                layoutManager = LinearLayoutManager(context)
+                adapter = legendAdapter
+            }
+            legendAdapter.updateData(chartDataList)
+
+            // Set click listener for miscellaneous category
+            legendAdapter.setOnCategoryClickListener { categoryName ->
+                if (categoryName == "Miscellaneous") {
+                    dialog.dismiss()
+                    showSubcategoryBreakdownDialog()
+                }
+            }
+        } else {
+            tvChartCenter.text = "No Data\n₹0.00"
+        }
+
+        // Set close button listeners
+        btnCloseDialog.setOnClickListener { dialog.dismiss() }
+        btnClose.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    private fun createChartDataFromExpenses(expenses: List<Expense>): List<ChartData> {
+        if (expenses.isEmpty()) return emptyList()
+
+        val categoryTotals =
+                expenses
+                        .groupBy { expense ->
+                            CategoryStructure.getMainCategoryForSubcategory(expense.category)
+                        }
+                        .mapValues { (_, expenseList) -> expenseList.sumOf { it.amount } }
+
+        val totalAmount = categoryTotals.values.sum()
+        if (totalAmount == 0.0) return emptyList()
+
+        return categoryTotals
+                .map { (category, amount) ->
+                    val percentage = (amount / totalAmount * 100).toFloat()
+                    val color =
+                            when (category) {
+                                "Travel" ->
+                                        ContextCompat.getColor(
+                                                requireContext(),
+                                                R.color.travel_color
+                                        )
+                                "Food" ->
+                                        ContextCompat.getColor(requireContext(), R.color.food_color)
+                                "Stationary" ->
+                                        ContextCompat.getColor(
+                                                requireContext(),
+                                                R.color.stationary_color
+                                        )
+                                "Miscellaneous" ->
+                                        ContextCompat.getColor(requireContext(), R.color.misc_color)
+                                else -> ContextCompat.getColor(requireContext(), R.color.misc_color)
+                            }
+
+                    ChartData(
+                            label = category,
+                            value = amount,
+                            color = color,
+                            percentage = percentage
+                    )
+                }
+                .sortedByDescending { it.value }
+    }
+
+    private fun showSubcategoryBreakdownDialog() {
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_subcategory_breakdown)
+
+        // Set dialog properties
+        dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Initialize dialog views
+        val tvSubcategoryDialogTitle = dialog.findViewById<TextView>(R.id.tvSubcategoryDialogTitle)
+        val btnCloseSubcategoryDialog =
+                dialog.findViewById<ImageButton>(R.id.btnCloseSubcategoryDialog)
+        val btnCloseSubcategory =
+                dialog.findViewById<com.google.android.material.button.MaterialButton>(
+                        R.id.btnCloseSubcategory
+                )
+        val tvTotalMiscAmount = dialog.findViewById<TextView>(R.id.tvTotalMiscAmount)
+        val recyclerViewSubcategories =
+                dialog.findViewById<RecyclerView>(R.id.recyclerViewSubcategories)
+        val layoutSubcategoryEmptyState =
+                dialog.findViewById<View>(R.id.layoutSubcategoryEmptyState)
+
+        // Set title with current month
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.MONTH, currentMonthOffset)
+        val monthFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
+        tvSubcategoryDialogTitle.text = "💼 Miscellaneous - ${monthFormat.format(calendar.time)}"
+
+        // Get miscellaneous expenses
+        val miscExpenses =
+                currentMonthExpenses.filter {
+                    !it.isIncome &&
+                            CategoryStructure.getMainCategoryForSubcategory(it.category) ==
+                                    "Miscellaneous"
+                }
+
+        if (miscExpenses.isNotEmpty()) {
+            val totalMiscAmount = miscExpenses.sumOf { it.amount }
+            tvTotalMiscAmount.text = "₹${String.format("%.2f", totalMiscAmount)}"
+
+            // Create subcategory breakdown
+            val subcategoryData = createSubcategoryBreakdown(miscExpenses, totalMiscAmount)
+
+            // Setup RecyclerView
+            val subcategoryAdapter = SubcategoryBreakdownAdapter()
+            recyclerViewSubcategories.apply {
+                layoutManager = LinearLayoutManager(context)
+                adapter = subcategoryAdapter
+            }
+            subcategoryAdapter.updateData(subcategoryData)
+
+            recyclerViewSubcategories.visibility = View.VISIBLE
+            layoutSubcategoryEmptyState.visibility = View.GONE
+        } else {
+            tvTotalMiscAmount.text = "₹0.00"
+            recyclerViewSubcategories.visibility = View.GONE
+            layoutSubcategoryEmptyState.visibility = View.VISIBLE
+        }
+
+        // Set close button listeners
+        btnCloseSubcategoryDialog.setOnClickListener { dialog.dismiss() }
+        btnCloseSubcategory.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    private fun createSubcategoryBreakdown(
+            miscExpenses: List<Expense>,
+            totalAmount: Double
+    ): List<SubcategoryItem> {
+        val subcategoryTotals =
+                miscExpenses.groupBy { it.category }.mapValues { (_, expenseList) ->
+                    Pair(expenseList.sumOf { it.amount }, expenseList.size)
+                }
+
+        return subcategoryTotals
+                .map { (subcategory, amountAndCount) ->
+                    val amount = amountAndCount.first
+                    val count = amountAndCount.second
+                    val percentage =
+                            if (totalAmount > 0) (amount / totalAmount * 100).toFloat() else 0f
+
+                    val icon = getSubcategoryIcon(subcategory)
+
+                    SubcategoryItem(
+                            name = subcategory,
+                            amount = amount,
+                            transactionCount = count,
+                            percentage = percentage,
+                            icon = icon
+                    )
+                }
+                .sortedByDescending { it.amount }
+    }
+
+    private fun getSubcategoryIcon(subcategory: String): String {
+        return when (subcategory.lowercase()) {
+            "friend", "friends" -> "👥"
+            "family" -> "👨‍👩‍👧‍👦"
+            "gift", "gifts" -> "🎁"
+            "donation", "charity" -> "💝"
+            "entertainment" -> "🎬"
+            "health", "medical" -> "🏥"
+            "personal care" -> "💅"
+            "bills", "utilities" -> "📄"
+            "other misc", "miscellaneous", "random" -> "💼"
+            else -> "💰"
         }
     }
 

@@ -684,53 +684,324 @@ Reply with only: INCOME or EXPENSE
         }
 
         private fun extractCategory(message: String): String {
+                val lowerMessage = message.lowercase()
+
+                // First check if this looks like a person name expense
+                if (isProbablyPersonName(lowerMessage)) {
+                        return "Friend"
+                }
+
+                // Enhanced category detection with subcategories using whole word matching
                 val categoryKeywords =
                         mapOf(
-                                "food" to "Food & Dining",
-                                "restaurant" to "Food & Dining",
-                                "lunch" to "Food & Dining",
-                                "dinner" to "Food & Dining",
-                                "snack" to "Food & Dining",
-                                "coffee" to "Food & Dining",
-                                "transport" to "Transportation",
-                                "uber" to "Transportation",
-                                "taxi" to "Transportation",
-                                "bus" to "Transportation",
-                                "metro" to "Transportation",
-                                "petrol" to "Transportation",
-                                "fuel" to "Transportation",
-                                "shopping" to "Shopping",
-                                "clothes" to "Shopping",
-                                "shoes" to "Shopping",
-                                "entertainment" to "Entertainment",
+                                // Travel category
+                                "flight" to "Flight",
+                                "airplane" to "Flight",
+                                "plane" to "Flight",
+                                "hotel" to "Hotel",
+                                "accommodation" to "Hotel",
+                                "stay" to "Hotel",
+                                "taxi" to "Taxi/Uber",
+                                "uber" to "Taxi/Uber",
+                                "ola" to "Taxi/Uber",
+                                "cab" to "Taxi/Uber",
+                                "bus" to "Bus/Train",
+                                "train" to "Bus/Train",
+                                "metro" to "Local Transport",
+                                "transport" to "Local Transport",
+                                "petrol" to "Fuel",
+                                "fuel" to "Fuel",
+                                "gas" to "Fuel",
+                                "diesel" to "Fuel",
+                                "travel" to "Other Travel",
+                                "trip" to "Other Travel",
+                                "vacation" to "Other Travel",
+
+                                // Food category
+                                "restaurant" to "Restaurant",
+                                "dining" to "Restaurant",
+                                "lunch" to "Restaurant",
+                                "dinner" to "Restaurant",
+                                "breakfast" to "Restaurant",
+                                "grocery" to "Groceries",
+                                "groceries" to "Groceries",
+                                "supermarket" to "Groceries",
+                                "market" to "Groceries",
+                                "coffee" to "Coffee/Tea",
+                                "tea" to "Coffee/Tea",
+                                "cafe" to "Coffee/Tea",
+                                "snack" to "Snacks",
+                                "snacks" to "Snacks",
+                                "chips" to "Snacks",
+                                "delivery" to "Delivery",
+                                "zomato" to "Delivery",
+                                "swiggy" to "Delivery",
+                                "dominos" to "Fast Food",
+                                "mcdonald" to "Fast Food",
+                                "kfc" to "Fast Food",
+                                "pizza" to "Fast Food",
+                                "burger" to "Fast Food",
+                                "food" to "Other Food",
+                                "eat" to "Other Food",
+
+                                // Stationary category
+                                "book" to "Books",
+                                "books" to "Books",
+                                "novel" to "Books",
+                                "pen" to "Pens/Pencils",
+                                "pencil" to "Pens/Pencils",
+                                "marker" to "Pens/Pencils",
+                                "notebook" to "Notebooks",
+                                "diary" to "Notebooks",
+                                "copy" to "Notebooks",
+                                "office" to "Office Supplies",
+                                "supplies" to "Office Supplies",
+                                "computer" to "Electronics",
+                                "laptop" to "Electronics",
+                                "phone" to "Electronics",
+                                "mobile" to "Electronics",
+                                "software" to "Software",
+                                "app" to "Software",
+                                "subscription" to "Software",
+                                "printer" to "Printer Items",
+                                "ink" to "Printer Items",
+                                "paper" to "Printer Items",
+                                "art" to "Art Supplies",
+                                "paint" to "Art Supplies",
+                                "canvas" to "Art Supplies",
+                                "stationary" to "Other Stationary",
+
+                                // Miscellaneous category
+                                "friend" to "Friend",
+                                "buddy" to "Friend",
+                                "pal" to "Friend",
+                                "mate" to "Friend",
+                                "family" to "Family",
+                                "mom" to "Family",
+                                "dad" to "Family",
+                                "brother" to "Family",
+                                "sister" to "Family",
+                                "parent" to "Family",
+                                "gift" to "Gift",
+                                "present" to "Gift",
+                                "birthday" to "Gift",
+                                "donation" to "Donation",
+                                "charity" to "Donation",
                                 "movie" to "Entertainment",
+                                "cinema" to "Entertainment",
                                 "game" to "Entertainment",
-                                "bill" to "Bills & Utilities",
-                                "electricity" to "Bills & Utilities",
-                                "internet" to "Bills & Utilities",
-                                "phone" to "Bills & Utilities",
-                                "rent" to "Bills & Utilities",
-                                "doctor" to "Healthcare",
-                                "medicine" to "Healthcare",
-                                "hospital" to "Healthcare",
-                                "health" to "Healthcare",
-                                "education" to "Education",
-                                "course" to "Education",
-                                "book" to "Education",
-                                "travel" to "Travel",
-                                "hotel" to "Travel",
-                                "flight" to "Travel",
-                                "grocery" to "Food & Dining",
-                                "groceries" to "Food & Dining"
+                                "entertainment" to "Entertainment",
+                                "fun" to "Entertainment",
+                                "doctor" to "Health",
+                                "medicine" to "Health",
+                                "hospital" to "Health",
+                                "health" to "Health",
+                                "medical" to "Health",
+                                "pharmacy" to "Health",
+                                "personal" to "Personal Care",
+                                "haircut" to "Personal Care",
+                                "salon" to "Personal Care",
+                                "cosmetics" to "Personal Care",
+                                "bill" to "Bills",
+                                "electricity" to "Bills",
+                                "internet" to "Bills",
+                                "rent" to "Bills",
+                                "utility" to "Bills",
+                                "miscellaneous" to "Other Misc",
+                                "misc" to "Other Misc",
+                                "other" to "Other Misc"
                         )
 
-                for ((keyword, category) in categoryKeywords) {
-                        if (message.contains(keyword)) {
-                                return category
+                // Find matching subcategory using whole word matching
+                for ((keyword, subcategory) in categoryKeywords) {
+                        if (containsWholeWord(lowerMessage, keyword)) {
+                                return subcategory
                         }
                 }
 
-                return "Other"
+                // Default to "Other Misc" if no category found
+                return "Other Misc"
+        }
+
+        private fun isProbablyPersonName(message: String): Boolean {
+                // Common Indian names and patterns that suggest person names
+                val commonNames =
+                        listOf(
+                                "khandelwal",
+                                "sharma",
+                                "gupta",
+                                "agarwal",
+                                "bansal",
+                                "jain",
+                                "mittal",
+                                "goel",
+                                "singh",
+                                "kumar",
+                                "pandey",
+                                "verma",
+                                "tiwari",
+                                "mishra",
+                                "yadav",
+                                "shah",
+                                "patel",
+                                "mehta",
+                                "thakur",
+                                "rajput",
+                                "arora",
+                                "kapoor",
+                                "malhotra",
+                                "bhatia",
+                                "rahul",
+                                "rohit",
+                                "amit",
+                                "ankit",
+                                "vikash",
+                                "priya",
+                                "pooja",
+                                "sneha",
+                                "neha",
+                                "deepak",
+                                "suresh",
+                                "rajesh",
+                                "mahesh",
+                                "ramesh",
+                                "dinesh",
+                                "mukesh",
+                                "prakash",
+                                "aman",
+                                "raman",
+                                "karan",
+                                "arjun",
+                                "varun",
+                                "tarun",
+                                "gaurav",
+                                "saurav",
+                                "aditya",
+                                "ankur",
+                                "ashish",
+                                "manish",
+                                "girish",
+                                "harish",
+                                "nitish",
+                                "ravi",
+                                "sunita",
+                                "anita",
+                                "kavita",
+                                "namita",
+                                "sangita",
+                                "geeta",
+                                "sita",
+                                "rita",
+                                "vishal",
+                                "shubham",
+                                "akshay",
+                                "ajay",
+                                "vijay",
+                                "sanjay",
+                                "manoj",
+                                "anil"
+                        )
+
+                // Check for patterns that suggest person names
+                val namePatterns =
+                        listOf(
+                                "on [a-z]+wal\\b".toRegex(), // ends with 'wal' like Khandelwal
+                                "on [a-z]+kar\\b".toRegex(), // ends with 'kar' like Sarkar
+                                "to [a-z]+\\s(bhai|ji|sir|madam)\\b".toRegex(), // followed by
+                                // titles
+                                "for [a-z]+\\s(uncle|aunty|anna|didi)\\b".toRegex() // family titles
+                        )
+
+                // Check if any common name is mentioned
+                for (name in commonNames) {
+                        if (containsWholeWord(message, name)) {
+                                return true
+                        }
+                }
+
+                // Check name patterns
+                for (pattern in namePatterns) {
+                        if (pattern.find(message) != null) {
+                                return true
+                        }
+                }
+
+                // Check for typical person name contexts
+                val personContexts =
+                        listOf(
+                                "paid to",
+                                "gave to",
+                                "lent to",
+                                "borrowed from",
+                                "owed to",
+                                "spend on",
+                                "spent on",
+                                "pay to",
+                                "money to",
+                                "cash to"
+                        )
+
+                for (context in personContexts) {
+                        if (message.contains(context)) {
+                                // Extract what comes after the context
+                                val afterContext = message.substringAfter(context).trim()
+                                val firstWord = afterContext.split(" ").firstOrNull()?.lowercase()
+
+                                // If it's a single word that's not a common item, likely a name
+                                if (firstWord != null &&
+                                                firstWord.length > 2 &&
+                                                !isCommonItem(firstWord) &&
+                                                firstWord.all { it.isLetter() }
+                                ) {
+                                        return true
+                                }
+                        }
+                }
+
+                return false
+        }
+
+        private fun containsWholeWord(text: String, word: String): Boolean {
+                val pattern = "\\b${Regex.escape(word)}\\b".toRegex()
+                return pattern.find(text) != null
+        }
+
+        private fun isCommonItem(word: String): Boolean {
+                val commonItems =
+                        setOf(
+                                "food",
+                                "lunch",
+                                "dinner",
+                                "breakfast",
+                                "coffee",
+                                "tea",
+                                "snack",
+                                "drink",
+                                "book",
+                                "pen",
+                                "pencil",
+                                "paper",
+                                "notebook",
+                                "bag",
+                                "clothes",
+                                "shirt",
+                                "fuel",
+                                "petrol",
+                                "taxi",
+                                "bus",
+                                "train",
+                                "ticket",
+                                "bill",
+                                "rent",
+                                "medicine",
+                                "hospital",
+                                "doctor",
+                                "movie",
+                                "game",
+                                "gift",
+                                "shopping"
+                        )
+                return commonItems.contains(word)
         }
 
         private fun generateUniqueId(): String {

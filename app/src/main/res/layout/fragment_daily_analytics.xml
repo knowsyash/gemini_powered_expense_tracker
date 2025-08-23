@@ -239,18 +239,18 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Expense Categories"
+                    android:text="Category Statistics"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="16dp" />
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerViewCategories"
+                    android:id="@+id/recyclerViewCategoryBreakdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_category_analytics" />
+                    tools:listitem="@layout/item_category_summary" />
 
                 <!-- Empty State -->
                 <LinearLayout
@@ -273,7 +273,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Start adding expenses to see category breakdown"
+                        android:text="Start adding expenses to see category statistics"
                         android:textSize="14sp"
                         android:textColor="@color/text_tertiary"
                         android:gravity="center" />

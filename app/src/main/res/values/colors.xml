@@ -66,4 +66,10 @@
     <color name="silver">#C6C6C6</color>
     <color name="dark_gray">#2A2A2A</color>
     <color name="neon_cyan">#00FFFF</color>
+    
+    <!-- Category Colors for Charts -->
+    <color name="travel_color">#4A90E2</color>
+    <color name="food_color">#50C878</color>
+    <color name="stationary_color">#FF8C42</color>
+    <color name="misc_color">#9B59B6</color>
 </resources>
